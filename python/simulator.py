@@ -9,6 +9,9 @@ from odometry import DiffDriveOdometry as Odo
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
+import numpy as np
+import time
+
 
 class SimulationAnimation:
     """
@@ -28,7 +31,13 @@ class SimulationAnimation:
         self._odo = Odo(start_pose, wheelbase)
         self._delta_t = delta_t
 
-        self._motor_command_vector = (1, 0)
+        # robot speed from user
+        self._velocity_mag = 0.1  # meters/sec
+        self._delta_velocity_mag = 0.01  # meters/sec
+        self._velocity_theta = 0.0  # radians
+        self._delta_velocity_theta = np.radians(0.1)  # radians
+
+        # motor encoder emulation
         self._left_encoder_true = 0
         self._right_encoder_true = 0
         self._left_encoder_noisy = 0
@@ -50,6 +59,15 @@ class SimulationAnimation:
 
     # --------------------------------------------------------------------------
     # Animation Methods
+
+    def connect_up_callbacks(self) -> None:
+        """
+        hooks up the keystroke callbacks to self.fig
+        """
+        self.fig.canvas.mpl_connect(
+            'key_press_event',
+            self._keystroke_handler_cb
+        )
 
     def update_animation(self, dunno) -> list:
         """
@@ -105,8 +123,8 @@ class SimulationAnimation:
             self._ax.plot([], [], lw=2, ls='-', c='b')[0],  # Ground truth
             self._ax.plot([], [], lw=2, ls=':', c='r')[0]   # Estimate
         ]
-        # for line in self._plot_lines:
-        #     line.set_data([], [])
+
+        self.connect_up_callbacks()
 
         plt.title("Differential Drive Robot: Odometry Simulation")
         plt.xlabel("Global X (meters)")
@@ -120,17 +138,27 @@ class SimulationAnimation:
     # --------------------------------------------------------------------------
     # User robot control keyboard callbacks
 
-    def left_arrow_cb(self) -> None:
-        pass
+    def _keystroke_handler_cb(self, event):  # -> None:
 
-    def right_arrow_cb(self) -> None:
-        pass
+        if event.key in ("up", "w"):
+            self._velocity_mag += self._delta_velocity_mag
+            print("DBG *** Up Key! velocity = {} m/s at {} deg".format(
+                self._velocity_mag, np.degrees(self._velocity_theta)))
 
-    def forward_arrow_cb(self) -> None:
-        pass
+        elif event.key in ("left", "d"):
+            self._velocity_theta += self._delta_velocity_theta
+            print("DBG *** Left Key! velocity = {} m/s at {} deg".format(
+                self._velocity_mag, np.degrees(self._velocity_theta)))
 
-    def back_arrow_cb(self) -> None:
-        pass
+        elif event.key in ("right", "a"):
+            self._velocity_theta -= self._delta_velocity_theta
+            print("DBG *** Right Key! velocity = {} m/s at {} deg".format(
+                self._velocity_mag, np.degrees(self._velocity_theta)))
+
+        elif event.key in ("down", "s"):
+            self._velocity_mag -= self._delta_velocity_mag
+            print("DBG *** Down Key! velocity = {} m/s at {} deg".format(
+                self._velocity_mag, np.degrees(self._velocity_theta)))
 
     # --------------------------------------------------------------------------
     # Private Methods
