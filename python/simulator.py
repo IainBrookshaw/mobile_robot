@@ -44,14 +44,14 @@ class SimulationAnimation:
         self.odo_path_theta = [start_pose[2]]
 
         # Plot data
-        self.fig = None
+        self.fig = plt.figure(figsize=(12, 12))
         self._plot_lines = None
         self._ax = None
 
     # --------------------------------------------------------------------------
     # Animation Methods
 
-    def update_animation(self) -> list:
+    def update_animation(self, dunno) -> list:
         """
         This method updates the simulation state (computing new odometry and gt)
         and updates the plot
@@ -76,35 +76,44 @@ class SimulationAnimation:
         self.odo_path_x.append(odo_pose[0])
         self.odo_path_y.append(odo_pose[1])
         self.odo_path_theta.append(odo_pose[2])
+        #
         if self._plot_lines:
-            self._plot_lines[1].set_data(self.odo_path_x, self.odo_path_y)
+            self._plot_lines[1].set_data(
+                self.odo_path_x,
+                self.odo_path_y
+            )
 
         # compute and update the ground truth calculation
         true_pose = self._update_true_pose(l_encoder, r_encoder)
         self.ground_truth_path_x.append(true_pose[0])
         self.ground_truth_path_y.append(true_pose[1])
         self.ground_truth_path_theta.append(true_pose[2])
+        #
         if self._plot_lines:
             self._plot_lines[0].set_data(
-                self.ground_truth_path_x, self.ground_truth_path_y)
+                self.ground_truth_path_x,
+                self.ground_truth_path_y
+            )
 
         return self._plot_lines
 
-    def init_animation(self) -> None:
-        self.fig = plt.figure()
+    def init_animation(self) -> list:
+        print("DBG *** creating axes")
         self._ax = plt.axes(xlim=(-10, 10), ylim=(-10, 10))
+        #
         self._plot_lines = [
-            self._ax.plot([], [], lw=2, color='b'),  # Ground truth
-            self._ax.plot([], [], lw=2, color='r.')  # Estimated by Odometry
+            self._ax.plot([], [], lw=2, ls='-', c='b')[0],  # Ground truth
+            self._ax.plot([], [], lw=2, ls=':', c='r')[0]   # Estimate
         ]
+        # for line in self._plot_lines:
+        #     line.set_data([], [])
 
         plt.title("Differential Drive Robot: Odometry Simulation")
         plt.xlabel("Global X (meters)")
-        plt.xlabel("Global Y (meters)")
+        plt.ylabel("Global Y (meters)")
         plt.legend()
-
-        for line in self._plot_lines:
-            line.set_data([], [])
+        plt.grid()
+        self._ax.set_aspect('equal', 'box')
 
         return self._plot_lines
 
@@ -146,7 +155,7 @@ class SimulationAnimation:
 if __name__ == "__main__":
 
     # default values. TODO: make args
-    start_pose = (0, 0)
+    start_pose = (0, 0, 0)
     wheelbase = 0.10
     delta_t = 0.01
 
