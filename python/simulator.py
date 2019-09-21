@@ -22,7 +22,7 @@ _robot_wheelbase: float = 0.03       # meters
 _robot_wheel_radius: float = 0.01    # meters
 _robot_wheel_v_max: float = 0.2      # meters / second
 _robot_max_motor_power: float = 2.5  # watts
-_wheel_v_noise: float = 0.05         # +/- n% error in velocity calc
+_wheel_v_noise: float = 0.5          # +/- n% error in velocity calc
 _robot_wheel_max_omega: float = _robot_wheel_v_max/_robot_wheel_radius  # rad/sec
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -47,16 +47,10 @@ class SimulationAnimation:
         self._delta_t: float = delta_t
 
         # robot speed from user (power to motors)
-        self._total_motor_power = 0.0   # watts
+        self._total_motor_power = 0.5   # watts
         self._delta_motor_power = 0.01  # watts
-        self._motor_prop = 0.0
+        self._motor_prop = 0.5
         self._delta_prop = 0.01
-
-        # motor encoder emulation
-        self._left_encoder_true = 0
-        self._right_encoder_true = 0
-        self._left_encoder_noisy = 0
-        self._right_encoder_noisy = 0
 
         # the plot-able paths for ground truth and estimated
         self.ground_truth_path_x: List = [start_pose[0]]
@@ -67,8 +61,12 @@ class SimulationAnimation:
         self.odo_path_y: List = [start_pose[1]]
         self.odo_path_theta: List = [start_pose[2]]
 
-        # Plot data
+        # Plot data and turn off ALL keybindings
+        # the init will re-establish this
         self.fig: plt.Figure = plt.figure(figsize=(12, 12))
+        self.fig.canvas.mpl_disconnect(
+            self.fig.canvas.manager.key_press_handler_id)
+
         self._display_text = None
         self._plot_lines = None
         self._ax = None
@@ -111,6 +109,17 @@ class SimulationAnimation:
                 self.odo_path_y
             )
 
+        # update heading arrows
+        gt_heading_vector = self._compute_heading_vector(
+            true_pose, true_pose[2])
+        odo_heading_vector = self._compute_heading_vector(
+            odom_pose, odom_pose[2])
+
+        # self._plot_lines[2].set_data(
+        #     true_pose[0], true_pose[1], gt_heading_vector[0], gt_heading_vector[1])
+        # self._plot_lines[3].set_data(
+        #     odom_pose[0], odom_pose[1], odo_heading_vector[0], odo_heading_vector[1])
+
         # print summary data:
         self._display_text.set_text(
             """
@@ -118,10 +127,15 @@ pose    = [{0:.2f}, {1:.2f}] m
 heading = {2:.2f} degrees
 wheel_v = [{3:.2f}, {4:.2f}] m/s
 motor_p = {5:.2f} watts
+
+Pose Error    = {6:.2f} mm
+Heading Error = {7:.2f} degrees
 """.format(
                 true_pose[0], true_pose[1], np.degrees(true_pose[2]),
                 l_v, r_v,
-                self._total_motor_power
+                self._total_motor_power,
+                1000.0*self._compute_pose_error_abs(odom_pose, true_pose),
+                np.degrees(true_pose[2] - odom_pose[2])
             ))
 
         return self._plot_lines
@@ -133,10 +147,18 @@ motor_p = {5:.2f} watts
         #
         self._plot_lines = [
             self._ax.plot([], [], lw=1, ls='-', c='b',
-                          label="Ground Truth")[0],
+                          label="Ground Truth Pose")[0],
             self._ax.plot([], [], lw=1, ls=':', c='r',
-                          label="Odometer Estimate")[0]
+                          label="Odometer Estimate Pose")[0]
         ]
+
+        self._true_dir_arrow = plt.Arrow(
+            0, 0, 0, 0, label="Ground Truth Heading")
+        self._odo_dir_arrow = plt.Arrow(
+            0, 0, 0, 0, label="Odometer Estimate Heading")
+
+        self._plot_lines.append(self._true_dir_arrow)
+        self._plot_lines.append(self._odo_dir_arrow)
 
         self.connect_up_callbacks()
         self._display_text = plt.text(-0.6, 0.5, "")
@@ -203,9 +225,9 @@ motor_p = {5:.2f} watts
 
     def _update_true_pose(self, true_pose: Tuple[float, float, float]) -> None:
         if _max_history < len(self.ground_truth_path_x):
-            self.ground_truth_path_x = self.ground_truth_path_x[:-2]
-            self.ground_truth_path_y = self.ground_truth_path_y[:-2]
-            self.ground_truth_path_theta = self.ground_truth_path_theta[:-2]
+            self.ground_truth_path_x = self.ground_truth_path_x[: -2]
+            self.ground_truth_path_y = self.ground_truth_path_y[: -2]
+            self.ground_truth_path_theta = self.ground_truth_path_theta[: -2]
 
         self.ground_truth_path_x.append(true_pose[0])
         self.ground_truth_path_y.append(true_pose[1])
@@ -213,15 +235,26 @@ motor_p = {5:.2f} watts
 
     def _update_odom_pose(self, odo_pose: Tuple[float, float, float]) -> None:
         if _max_history < len(self.odo_path_x):
-            self.odo_path_x = self.odo_path_x[:-2]
-            self.odo_path_y = self.odo_path_y[:-2]
-            self.odo_path_theta = self.odo_path_theta[:-2]
+            self.odo_path_x = self.odo_path_x[: -2]
+            self.odo_path_y = self.odo_path_y[: -2]
+            self.odo_path_theta = self.odo_path_theta[: -2]
 
         self.odo_path_x.append(odo_pose[0])
         self.odo_path_y.append(odo_pose[1])
         self.odo_path_theta.append(odo_pose[2])
 
-    # ----------------------------------------------------------------------------------------------------------------------
+    def _compute_pose_error_abs(self, odo_pose, true_pose) -> float:
+        dx = odo_pose[0] - true_pose[0]
+        dy = odo_pose[1] - true_pose[1]
+        return float(np.sqrt(dx**2 + dy**2))
+
+    def _compute_heading_vector(self, pose, theta):
+        return (
+            pose[0] + 0.25 * np.cos(theta),
+            pose[1] + 0.25 * np.sin(theta)
+        )
+
+        # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
 
     # default values. TODO: make args
