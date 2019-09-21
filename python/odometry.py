@@ -31,24 +31,31 @@ class DiffDriveOdometry:
                 self._old_pose[2]
             )
 
-        R = DiffDriveOdometry._compute_r(v_l, v_r)
-
-        w = DiffDriveOdometry._compute_omega(v_l, v_r, self.wheelbase)
-
+        R = DiffDriveOdometry._compute_r(
+            v_l,
+            v_r
+        )
+        w = DiffDriveOdometry._compute_omega(
+            v_l,
+            v_r,
+            self.wheelbase
+        )
         icc = DiffDriveOdometry._compute_icc(
             R,
             self._old_pose[2],
             self._old_pose
         )
-
         new_theta = DiffDriveOdometry._compute_new_theta(
-            self._old_pose,
+            self._old_pose[2],
             w,
             delta_t
         )
-
         new_x, new_y = DiffDriveOdometry._compute_new_corrdinate(
-            self._old_pose, icc, w, delta_t)
+            self._old_pose,
+            icc,
+            w,
+            delta_t
+        )
 
         self._old_pose = (new_x, new_y, new_theta)
         return self._old_pose
@@ -121,16 +128,20 @@ class DiffDriveOdometry:
             [np.cos(a), -np.sin(a)],
             [np.sin(a),  np.cos(a)]
         ])
-
         X = np.matrix([
-            [old_pose[0] - icc[0]],
-            [old_pose[1] - icc[1]]
-        ])
+            old_pose[0] - icc[0],
+            old_pose[1] - icc[1]
+        ]).transpose()
 
         A = np.matrix([
-            [icc[0]],
-            [icc[1]]
-        ])
+            icc[0],
+            icc[1]
+        ]).transpose()
 
-        new_pose = R*X + A
-        return tuple(new_pose)
+        new_pose_mat = R*X + A
+        new_pose = (
+            float(new_pose_mat[0]),
+            float(new_pose_mat[1])
+        )
+
+        return new_pose
