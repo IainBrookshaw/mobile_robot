@@ -4,17 +4,17 @@ Differential Drive Robot: Odometry
 Iain Brookshaw
 21 September 2019
 """
-
+from typing import Tuple, Dict, List
 import numpy as np
 
 
 class DiffDriveOdometry:
 
-    def __init__(self, start_pose: tuple, wheelbase: float) -> None:
-        self.wheelbase = wheelbase
-        self._old_pose = start_pose
+    def __init__(self, start_pose: Tuple[float, float, float], wheelbase: float) -> None:
+        self.wheelbase: float = wheelbase
+        self._old_pose: Tuple[float, float, float] = start_pose
 
-    def update_pose(self, v_l: float, v_r: float, delta_t: float, epsilon=0.001) -> tuple:
+    def update_pose(self, v_l: float, v_r: float, delta_t: float, epsilon: float = 0.001) -> Tuple[float, float, float]:
         """
         Compute the pose of the robot delta_t seconds after the last pose was computed.
         This is only going to be accurate for small steps of delta_t
@@ -32,7 +32,9 @@ class DiffDriveOdometry:
             )
 
         R = DiffDriveOdometry._compute_r(v_l, v_r)
+
         w = DiffDriveOdometry._compute_omega(v_l, v_r, self.wheelbase)
+
         icc = DiffDriveOdometry._compute_icc(
             R,
             self._old_pose[2],
@@ -40,17 +42,16 @@ class DiffDriveOdometry:
         )
 
         new_theta = DiffDriveOdometry._compute_new_theta(
-            self._old_pose, w, delta_t)
+            self._old_pose,
+            w,
+            delta_t
+        )
 
         new_x, new_y = DiffDriveOdometry._compute_new_corrdinate(
             self._old_pose, icc, w, delta_t)
 
         self._old_pose = (new_x, new_y, new_theta)
         return self._old_pose
-
-    @staticmethod
-    def encoder_to_velocity(delta_encoder_tick: int, max_encoder_tick: int, wheel_rad: float) -> float:
-        pass
 
     # ------------------------------------------------------------------------------------------------------------------
     # PRIVATE
@@ -84,7 +85,7 @@ class DiffDriveOdometry:
         return (v_r-v_l)/wheelbase
 
     @staticmethod
-    def _compute_icc(r: float, theta: float, old_pose: tuple) -> tuple:
+    def _compute_icc(r: float, theta: float, old_pose: Tuple[float, float]) -> Tuple[float, float]:
         """
         :param r:        the radius of rotation around r (m)
         :param theta:    the old heading of the robot (rads)
@@ -106,7 +107,7 @@ class DiffDriveOdometry:
         return theta + omega * delta_t
 
     @staticmethod
-    def _compute_new_corrdinate(old_pose: tuple, icc: tuple, omega: float, delta_t: float) -> tuple:
+    def _compute_new_corrdinate(old_pose: tuple, icc: Tuple[float, float], omega: float, delta_t: float) -> Tuple[float, float]:
         """
         :param old_pose: the old/current pose of the robot (m,m,rad)
         :param icc:      the x,y global pose of the ICC (m,m)

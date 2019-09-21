@@ -9,17 +9,22 @@ from odometry import DiffDriveOdometry as Odo
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
+from typing import Tuple, Dict, List
 import numpy as np
 import time
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Robot Chassis Constants
+# TODO: Make args
 
-# SOME ROBOT CONSTANTS. TODO: Make args
-_robot_wheelbase = 0.03       # meters
-_robot_wheel_radius = 0.01    # meters
-_robot_wheel_v_max = 0.2      # meters / second
-_robot_max_motor_power = 1.0  # watts
-_wheel_v_noise = 5.0          # +/- n% error in velocity calc
-_robot_wheel_max_omega = _robot_wheel_v_max/_robot_wheel_radius  # rad/sec
+_robot_wheelbase: float = 0.03       # meters
+_robot_wheel_radius: float = 0.01    # meters
+_robot_wheel_v_max: float = 0.2      # meters / second
+_robot_max_motor_power: float = 1.0  # watts
+_wheel_v_noise: float = 5.0          # +/- n% error in velocity calc
+_robot_wheel_max_omega: float = _robot_wheel_v_max/_robot_wheel_radius  # rad/sec
+
+# ----------------------------------------------------------------------------------------------------------------------
 
 
 class SimulationAnimation:
@@ -30,15 +35,15 @@ class SimulationAnimation:
     and the plotting mechanics
     """
 
-    def __init__(self, start_pose: tuple, wheelbase: float, delta_t: float) -> None:
+    def __init__(self, start_pose: Tuple[float, float, float], wheelbase: float, delta_t: float) -> None:
         """
         :param start_pose: the (x,y,theta) original pose of the robot (m, m, rad)
         :param wheelbase:  the distance between the robot's two wheels (m)
         :param delta_t:    the simulation time-step (s)
         """
-        self._odo = Odo(start_pose, wheelbase)  # the noisy computation
-        self._gt = Odo(start_pose, wheelbase)   # the ground truth
-        self._delta_t = delta_t
+        self._odo: Odo = Odo(start_pose, wheelbase)  # the noisy computation
+        self._gt: Odo = Odo(start_pose, wheelbase)   # the ground truth
+        self._delta_t: float = delta_t
 
         # robot speed from user (power to motors)
         self._total_motor_power = 0.0   # watts
@@ -53,16 +58,16 @@ class SimulationAnimation:
         self._right_encoder_noisy = 0
 
         # the plot-able paths for ground truth and estimated
-        self.ground_truth_path_x = [start_pose[0]]
-        self.ground_truth_path_y = [start_pose[1]]
-        self.ground_truth_path_theta = [start_pose[2]]
+        self.ground_truth_path_x: List = [start_pose[0]]
+        self.ground_truth_path_y: List = [start_pose[1]]
+        self.ground_truth_path_theta: List = [start_pose[2]]
         #
-        self.odo_path_x = [start_pose[0]]
-        self.odo_path_y = [start_pose[1]]
-        self.odo_path_theta = [start_pose[2]]
+        self.odo_path_x: List = [start_pose[0]]
+        self.odo_path_y: List = [start_pose[1]]
+        self.odo_path_theta: List = [start_pose[2]]
 
         # Plot data
-        self.fig = plt.figure(figsize=(12, 12))
+        self.fig: plt.Figure = plt.figure(figsize=(12, 12))
         self._plot_lines = None
         self._ax = None
 
@@ -78,7 +83,7 @@ class SimulationAnimation:
             self._keystroke_handler_cb
         )
 
-    def update_animation(self, dunno) -> list:
+    def update_animation(self, dunno) -> List:  # TODO: WHAT IS THE dunno arg ??
         """
         This method updates the simulation state (computing new odometry and gt)
         and updates the plot
@@ -111,7 +116,7 @@ class SimulationAnimation:
 
         return self._plot_lines
 
-    def init_animation(self) -> list:
+    def init_animation(self) -> List:
         self._ax = plt.axes(xlim=(-10, 10), ylim=(-10, 10))
         #
         self._plot_lines = [
@@ -160,7 +165,7 @@ class SimulationAnimation:
     # --------------------------------------------------------------------------
     # Private Methods
 
-    def _get_wheel_velocities(self) -> tuple:
+    def _get_wheel_velocities(self) -> Tuple[float, float]:
         """
         compute the current wheel velocities from the user settings of motor power
         """
@@ -174,7 +179,7 @@ class SimulationAnimation:
 
         return (vl, vr)
 
-    def _add_noise_to_velocities(self, vr: float, vl: float) -> tuple:
+    def _add_noise_to_velocities(self, vr: float, vl: float) -> Tuple[float, float]:
         """
         generate a bit of noise between +/- noise percent
         """
