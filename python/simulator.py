@@ -13,6 +13,15 @@ import numpy as np
 import time
 
 
+# SOME ROBOT CONSTANTS. TODO: Make args
+_robot_wheelbase = 0.03       # meters
+_robot_wheel_radius = 0.01    # meters
+_robot_wheel_v_max = 0.2      # meters / second
+_robot_max_motor_power = 1.0  # watts
+_wheel_v_noise = 5.0          # +/- n% error in velocity calc
+_robot_wheel_max_omega = _robot_wheel_v_max/_robot_wheel_radius  # rad/sec
+
+
 class SimulationAnimation:
     """
     This is the 2d animated plot that simulated the movement and odometry of
@@ -27,15 +36,15 @@ class SimulationAnimation:
         :param wheelbase:  the distance between the robot's two wheels (m)
         :param delta_t:    the simulation time-step (s)
         """
-
-        self._odo = Odo(start_pose, wheelbase)
+        self._odo = Odo(start_pose, wheelbase)  # the noisy computation
+        self._gt = Odo(start_pose, wheelbase)   # the ground truth
         self._delta_t = delta_t
 
-        # robot speed from user
-        self._velocity_mag = 0.1  # meters/sec
-        self._delta_velocity_mag = 0.01  # meters/sec
-        self._velocity_theta = 0.0  # radians
-        self._delta_velocity_theta = np.radians(0.1)  # radians
+        # robot speed from user (power to motors)
+        self._total_motor_power = 0.0   # watts
+        self._delta_motor_power = 0.01  # watts
+        self._motor_prop = 0.0
+        self._delta_prop = 0.01
 
         # motor encoder emulation
         self._left_encoder_true = 0
@@ -75,53 +84,41 @@ class SimulationAnimation:
         and updates the plot
         """
 
-        # compute the true and noisy encoders and convert the noisy values to velocities
-        l_encoder = self._emulate_left_wheel_encoder()
-        l_enc_noisy = l_encoder + \
-            self._generate_encoder_noise(
-                0.1)  # Todo: hardcoded noise magnitude
-        #
-        r_encoder = self._emulate_right_wheel_encoder()
-        r_enc_noisy = r_encoder + \
-            self._generate_encoder_noise(
-                0.1)  # Todo: hardcoded noise magnitude
-        #
-        v_l = self._encoder_to_velocity(self._left_encoder_noisy, l_enc_noisy)
-        v_r = self._encoder_to_velocity(self._right_encoder_noisy, r_enc_noisy)
-
-        # compute and update the odometry estimate
-        odo_pose = self._odo.update_pose(v_l, v_r, self._delta_t)
-        self.odo_path_x.append(odo_pose[0])
-        self.odo_path_y.append(odo_pose[1])
-        self.odo_path_theta.append(odo_pose[2])
-        #
-        if self._plot_lines:
-            self._plot_lines[1].set_data(
-                self.odo_path_x,
-                self.odo_path_y
-            )
-
-        # compute and update the ground truth calculation
-        true_pose = self._update_true_pose(l_encoder, r_encoder)
+        # compute and update the ground truth
+        l_v, r_v = self._get_wheel_velocities()
+        true_pose = self._gt.update_pose(l_v, r_v, self._delta_t)
         self.ground_truth_path_x.append(true_pose[0])
         self.ground_truth_path_y.append(true_pose[1])
         self.ground_truth_path_theta.append(true_pose[2])
-        #
+
+        # compute and update the noisy odometry pose
+        l_nv, r_nv = self._add_noise_to_velocities(l_v, r_v)
+        odom_pose = self._odo.update_pose(l_nv, r_nv, self._delta_t)
+        self.odo_path_x.append(odom_pose[0])
+        self.odo_path_y.append(odom_pose[1])
+        self.odo_path_theta.append(odom_pose[2])
+
+        # update and return the plots
         if self._plot_lines:
             self._plot_lines[0].set_data(
                 self.ground_truth_path_x,
                 self.ground_truth_path_y
             )
+            self._plot_lines[1].set_data(
+                self.odo_path_x,
+                self.odo_path_y
+            )
 
         return self._plot_lines
 
     def init_animation(self) -> list:
-        print("DBG *** creating axes")
         self._ax = plt.axes(xlim=(-10, 10), ylim=(-10, 10))
         #
         self._plot_lines = [
-            self._ax.plot([], [], lw=2, ls='-', c='b')[0],  # Ground truth
-            self._ax.plot([], [], lw=2, ls=':', c='r')[0]   # Estimate
+            self._ax.plot([], [], lw=2, ls='-', c='b',
+                          label="Ground Truth")[0],
+            self._ax.plot([], [], lw=2, ls=':', c='r',
+                          label="Odometer Estimate")[0]
         ]
 
         self.connect_up_callbacks()
@@ -138,48 +135,56 @@ class SimulationAnimation:
     # --------------------------------------------------------------------------
     # User robot control keyboard callbacks
 
-    def _keystroke_handler_cb(self, event):  # -> None:
+    def _keystroke_handler_cb(self, event) -> None:
 
         if event.key in ("up", "w"):
-            self._velocity_mag += self._delta_velocity_mag
-            print("DBG *** Up Key! velocity = {} m/s at {} deg".format(
-                self._velocity_mag, np.degrees(self._velocity_theta)))
+            self._total_motor_power += self._delta_motor_power
+            if self._total_motor_power > _robot_max_motor_power:
+                self._total_motor_power = _robot_max_motor_power
 
         elif event.key in ("left", "d"):
-            self._velocity_theta += self._delta_velocity_theta
-            print("DBG *** Left Key! velocity = {} m/s at {} deg".format(
-                self._velocity_mag, np.degrees(self._velocity_theta)))
+            self._motor_prop -= self._delta_prop
+            if self._motor_prop < -1:
+                self._motor_prop = -1.0
 
         elif event.key in ("right", "a"):
-            self._velocity_theta -= self._delta_velocity_theta
-            print("DBG *** Right Key! velocity = {} m/s at {} deg".format(
-                self._velocity_mag, np.degrees(self._velocity_theta)))
+            self._motor_prop += self._delta_prop
+            if self._motor_prop > 1:
+                self._motor_prop = 1.0
 
         elif event.key in ("down", "s"):
-            self._velocity_mag -= self._delta_velocity_mag
-            print("DBG *** Down Key! velocity = {} m/s at {} deg".format(
-                self._velocity_mag, np.degrees(self._velocity_theta)))
+            self._total_motor_power -= self._delta_motor_power
+            if self._total_motor_power < -_robot_max_motor_power:
+                self._total_motor_power = -_robot_max_motor_power
 
     # --------------------------------------------------------------------------
     # Private Methods
 
-    def _emulate_left_wheel_encoder(self) -> float:
-        return 1.0  # TODO: implement
+    def _get_wheel_velocities(self) -> tuple:
+        """
+        compute the current wheel velocities from the user settings of motor power
+        """
+        l_motor_power = self._total_motor_power * (self._motor_prop - 1)
+        r_motor_power = self._total_motor_power * (self._motor_prop + 1)
 
-    def _emulate_right_wheel_encoder(self) -> float:
-        return 1.0  # TODO: implement
+        vl = (_robot_wheel_max_omega / _robot_max_motor_power) * \
+            l_motor_power * _robot_wheel_radius
+        vr = (_robot_wheel_max_omega / _robot_max_motor_power) * \
+            r_motor_power * _robot_wheel_radius
 
-    def _encoder_to_velocity(self, old_encoder, new_encoder) -> float:
-        return 0.0  # TODO: implement
+        return (vl, vr)
 
-    def _generate_encoder_noise(self, magnitude: float) -> float:
-        return 0.0  # TODO: implement
+    def _add_noise_to_velocities(self, vr: float, vl: float) -> tuple:
+        """
+        generate a bit of noise between +/- noise percent
+        """
+        ln = 1 + np.random.uniform(low=-_wheel_v_noise, high=_wheel_v_noise)
+        rn = 1 + np.random.uniform(low=-_wheel_v_noise, high=_wheel_v_noise)
 
-    def _update_true_pose(self, l_enc, r_enc) -> tuple:
-        return (0, 0, 0)  # TODO: implement
+        return (vl*ln, vr*rn)
 
 
-# ----------------------------------------------------------------------------------------------------------------------
+        # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
 
     # default values. TODO: make args
