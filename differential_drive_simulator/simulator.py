@@ -13,32 +13,22 @@ from typing import Tuple, Dict, List
 import numpy as np
 import time
 
-# ----------------------------------------------------------------------------------------------------------------------
-# Robot Chassis Constants
-# When run as an executable, these may be set by the args
 
-_max_history: int = 1000
-_robot_wheelbase: float = 0.03       # meters
-_robot_wheel_radius: float = 0.01    # meters
-_robot_wheel_v_max: float = 0.2      # meters / second
-_robot_max_motor_power: float = 2.5  # watts
-_wheel_v_noise: float = 0.5          # +/- n% error in velocity calc
-_robot_wheel_max_omega: float = _robot_wheel_v_max/_robot_wheel_radius  # rad/sec
+class SimulationConfig:
+    """
+    There are a lot of simulation configuration variables. For simplicity, we 
+    are bundling them up in this class
+    """
 
-# Aesthetics
-_bg_color = "White"  # "#0d0d0f"
-_text_color = "Black"  # "#fce5c7"
-_robot_color = "DodgerBlue"
-_ground_truth_color = "DodgerBlue"
-_odo_path_color = "Coral"
-#
-_minimum_max_x = 0.1
-_minimum_min_x = -0.1
-_minimum_max_y = 0.1
-_minimum_min_y = -0.1
+    def __init(self):
+        self.start_pose = (0.0, 0.0)
+        self._delta_t = 0.1
 
+        self.robot_wheel_max_omega = 0.0
+        self.robot_max_motor_power = 0.0
+        self.robot_wheelbase = 0.0
 
-# ----------------------------------------------------------------------------------------------------------------------
+        self.colors = {}
 
 
 class SimulationAnimation:
@@ -49,11 +39,10 @@ class SimulationAnimation:
     and the plotting mechanics
     """
 
-    def __init__(self, start_pose: Tuple[float, float, float], wheelbase: float, delta_t: float) -> None:
+    def __init__(self, config: SimulationConfig) -> None:
         """
-        :param start_pose: the (x,y,theta) original pose of the robot (m, m, rad)
-        :param wheelbase:  the distance between the robot's two wheels (m)
-        :param delta_t:    the simulation time-step (s)
+        :param config: the SimulatioNConfig object that defines all the constants 
+        for this simulation
         """
         self._odo: Odo = Odo(start_pose, wheelbase)  # the noisy computation
         self._gt: Odo = Odo(start_pose, wheelbase)   # the ground truth
@@ -74,11 +63,11 @@ class SimulationAnimation:
         self.odo_path_y: List = [start_pose[1]]
         self.odo_path_theta: List = [start_pose[2]]
 
-        # Plot data and turn off ALL keybindings
-        # the init will re-establish this
+        # Plot data and turn off ALL keybindings. the init will re-establish this
+        self.colors = colors
         self.fig: plt.Figure = plt.figure(
             figsize=(12, 12),
-            facecolor=_bg_color
+            facecolor=colors["background"]
 
         )
         self.fig.canvas.mpl_disconnect(
@@ -130,11 +119,11 @@ class SimulationAnimation:
             )
 
         # update heading arrows
-        gt_heading_vector = self._compute_heading_vector(
-            true_pose, true_pose[2])
-        odo_heading_vector = self._compute_heading_vector(
-            odom_pose, odom_pose[2])
-
+        # gt_heading_vector = self._compute_heading_vector(
+        #     true_pose, true_pose[2])
+        # odo_heading_vector = self._compute_heading_vector(
+        #     odom_pose, odom_pose[2])
+        #
         # self._plot_lines[2].set_data(
         #     true_pose[0], true_pose[1], gt_heading_vector[0], gt_heading_vector[1])
         # self._plot_lines[3].set_data(
@@ -154,8 +143,8 @@ pose error = {6:.2f} mm by, Heading Error = {7:.2f} degrees
                 1000.0*self._compute_pose_error_abs(odom_pose, true_pose),
                 np.degrees(true_pose[2] - odom_pose[2])
             ))
-        self._display_text.set_color(_text_color)
-        self._display_text.set_backgroundcolor(_bg_color)
+        self._display_text.set_color(self.colors["text_color"])
+        self._display_text.set_backgroundcolor(self.colors["bg_color"])
 
         return self._plot_lines
 
@@ -165,21 +154,21 @@ pose error = {6:.2f} mm by, Heading Error = {7:.2f} degrees
             xlim=(-0.5, 0.5),  # todo: make args or global parameters
             ylim=(-0.5, 0.5))  # todo: make args or global parameters
         #
-        self._ax.set_facecolor(_bg_color)
-        self._ax.xaxis.label.set_color(_text_color)
-        self._ax.yaxis.label.set_color(_text_color)
-        self._ax.spines['bottom'].set_color(_text_color)
-        self._ax.spines['left'].set_color(_text_color)
-        self._ax.spines['right'].set_color(_text_color)
-        self._ax.spines['top'].set_color(_text_color)
-        self._ax.tick_params(axis='x', colors=_text_color)
-        self._ax.tick_params(axis='y', colors=_text_color)
+        self._ax.set_facecolor(self.colors["text_color"])
+        self._ax.xaxis.label.set_color(self.colors["text_color"])
+        self._ax.yaxis.label.set_color(self.colors["text_color"])
+        self._ax.spines['bottom'].set_color(self.colors["text_color"])
+        self._ax.spines['left'].set_color(_self.colors["ext_color"])
+        self._ax.spines['right'].set_color(self.colors["text_color"])
+        self._ax.spines['top'].set_color(self.colors["text_color"])
+        self._ax.tick_params(axis='x', colors=self.colors["text_color"])
+        self._ax.tick_params(axis='y', colors=self.colors["text_color"])
 
         self._plot_lines = [
-            self._ax.plot([], [], lw=1, ls='-', c=_ground_truth_color,
+            self._ax.plot([], [], lw=1, ls='-', c=self.colors["ground_truth"],
                           label="Ground Truth Pose")[0],
             self._ax.plot([], [], lw=2, ls=':',
-                          color=_odo_path_color,
+                          color=self.colors["odometry"],
                           markersize=5,
                           label="Odometer Estimate Pose")[0]
         ]
@@ -196,14 +185,14 @@ pose error = {6:.2f} mm by, Heading Error = {7:.2f} degrees
         self.connect_up_callbacks()
         self._display_text = self._ax.text(0, 0, "",
                                            horizontalalignment='left',
-                                           backgroundcolor=_bg_color,
-                                           color=_text_color,
+                                           backgroundcolor=self.colors["background"],
+                                           color=self.colors["text_color"],
                                            linespacing=1.2,
                                            fontfamily='monospace',
                                            fontsize=12)
 
         plt.title("Differential Drive Robot: Odometry Simulation",
-                  fontsize=20, color=_text_color)
+                  fontsize=20, color=self.colors["text_color"])
 
         plt.xlabel("Global X (meters)", fontsize=15)
         plt.ylabel("Global Y (meters)", fontsize=15)
@@ -211,10 +200,10 @@ pose error = {6:.2f} mm by, Heading Error = {7:.2f} degrees
                               fontsize=15,
                               fancybox=False,
                               numpoints=1)
-        leg.get_frame().set_facecolor(_bg_color)
+        leg.get_frame().set_facecolor(self.colors["background"])
 
         for text in leg.get_texts():
-            text.set_color(_text_color)
+            text.set_color(self.colors["text_color"])
 
         plt.grid()
         self._ax.set_aspect('equal', 'box')
@@ -341,21 +330,3 @@ pose error = {6:.2f} mm by, Heading Error = {7:.2f} degrees
         self._ax.set_xlim(min_x, max_x)
         self._ax.set_ylim(min_y, max_y)
         self._display_text.set_position((.95*min_x, 0.95*min_y))
-
-        # ----------------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-
-    # default values. TODO: make args
-    start_pose = (0, 0, 0)
-    wheelbase = 0.10
-    delta_t = 0.01
-
-    sim = SimulationAnimation(start_pose, wheelbase, delta_t)
-
-    anim = animation.FuncAnimation(
-        sim.fig,
-        sim.update_animation,
-        init_func=sim.init_animation
-    )
-
-    plt.show()

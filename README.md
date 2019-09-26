@@ -1,4 +1,4 @@
-# README: mobile robot odometry
+# README: Mobile Robot Tools & Examples
 
 Copyright (c) 2019, Iain Brookshaw
 All Rights Reserved

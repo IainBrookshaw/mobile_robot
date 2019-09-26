@@ -11,15 +11,15 @@ with open("readme.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="diff_sim",
+    name="differential_drive_simulator",
     version="0.0.1",
     author="Iain Brookshaw",
     author_email="iain.j.brookshaw@gmail.com",
-    description="Simulation of Diff Drive robot odometry",
+    description="Simulation of Differential Drive robot odometry",
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
-    scripts=["diff_simulation.py"],
+    scripts=["ddrive.py"],
     classifiers=[
         "Programming Language :: Python :: 3.6",
         "Operating System :: Linux"
