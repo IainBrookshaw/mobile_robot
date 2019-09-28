@@ -8,7 +8,7 @@ from typing import Tuple, Dict, List
 import numpy as np
 
 
-class DiffDriveOdometry:
+class DDriveOdometry:
 
     def __init__(self, start_pose: Tuple[float, float, float], wheelbase: float) -> None:
         self.wheelbase: float = wheelbase

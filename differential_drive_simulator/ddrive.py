@@ -4,7 +4,9 @@ Differential Drive Robot: Main Program
 Iain Brookshaw
 21 September 2019
 """
-from odometry import DiffDriveOdometry as Odo
+from odometry import DDriveOdometry as Odo
+from simulator import SimulationConfig as Config
+from simulator import SimulationAnimation as Sim
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -25,12 +27,36 @@ _robot_wheel_v_max: float = 0.2      # meters / second
 _robot_max_motor_power: float = 2.5  # watts
 _wheel_v_noise: float = 0.5          # +/- n% error in velocity calc
 _robot_wheel_max_omega: float = _robot_wheel_v_max/_robot_wheel_radius  # rad/sec
-
 #
-_minimum_max_x = 0.1
-_minimum_min_x = -0.1
-_minimum_max_y = 0.1
-_minimum_min_y = -0.1
+_minimum_max_x: float = 0.1
+_minimum_min_x: float = -0.1
+_minimum_max_y: float = 0.1
+_minimum_min_y: float = -0.1
+#
+_start_pose: Tuple(float, float) = (0.0, 0.0)
+
+
+_config = Config()
+
+# TODO:
+_config.max_history = 1000
+_config.wheel_v_max = 1.0
+_config.wheel_noise = 0.5
+
+# TODO: extant
+_config.start_pose = (0.0, 0.0)
+_config.delta_t = 0.1
+_config.robot_wheel_max_omega = _robot_wheel_v_max/_robot_wheel_radius
+_config.robot_max_motor_power = 2.0
+_config.robot_wheelbase = 0.20
+_config.colors = {
+    "background": "White",
+    "text_color": "Black",
+    "robot_color": "Blue",
+    "ground_truth": "Blue",
+    "odo_path": "Red"
+}
+
 
 if __name__ == "__main__":
 
@@ -46,7 +72,8 @@ if __name__ == "__main__":
     parser.add_argument("--noise", type=float,
                         help="wheel odometer velocity noise per step (+/- %)")
 
-    parser.add_argument("--dark", action='store_true', help="use dark theme")
+    parser.add_argument("--dark", action='store_true',
+                        help="use dark theme")
 
     args = parser.parse_args()
     if args.delta_t:
@@ -62,7 +89,10 @@ if __name__ == "__main__":
         _max_history = int(round(args.history * _delta_t))
 
     # Aesthetics
-    _bg_color = "#0d0d0f" if args.dark else "White"
+    if args.dark:
+        _config.colors["background"] = "#0d0d0f"
+        _config.colors["text_color"] = "#fce5c7"
+        _config.colors["robot"]
     _text_color = "#fce5c7" if args.dark else _bg_color
     _robot_color = "DodgerBlue" if args.dark else "Blue"
     _ground_truth_color = "DodgerBlue" if args.dark else "Blue"
