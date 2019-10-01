@@ -45,7 +45,6 @@ def _paint_circle(map: np.array, center: Tuple[int, int], r: int) -> None:
     walks through all the pixels in the circle's bounding box, giving a
     completion time of O(r^2)
     """
-    print(f"dbg *** creating circle at {center}, of radius {r}")
     row_count, col_count = map.shape
 
     x_min = center[0] - r if center[0] - r > 0 else 0
@@ -178,7 +177,7 @@ def plot_map(map: np.array, path: List[Tuple[int, int]] = None, scale=1.0, visit
         plt.plot([], [],
                  color='k', marker='s', markersize=5, linewidth=0, label="Obstacle")
 
-    plt.legend(fontsize=15)
+    plt.legend(fontsize=10, loc='upper right')
     plt.grid()
     plt.show()
 
