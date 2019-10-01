@@ -15,7 +15,7 @@ import numpy as np
 # Private Helper Methods
 
 
-def _blur_map(map: np.array, sigma=40) -> np.array:
+def _blur_map(map: np.array, sigma=5) -> np.array:
     """
     fuzzify the edges of the obstacles to make the map non-binary
     :param map: the numpy matrix representing the binary map
@@ -45,6 +45,7 @@ def _paint_circle(map: np.array, center: Tuple[int, int], r: int) -> None:
     walks through all the pixels in the circle's bounding box, giving a
     completion time of O(r^2)
     """
+    print(f"dbg *** creating circle at {center}, of radius {r}")
     row_count, col_count = map.shape
 
     x_min = center[0] - r if center[0] - r > 0 else 0
@@ -67,7 +68,7 @@ def _create_blob_obstacles(map: np.array, obs_max: int, obs_radius: float) -> np
     """
     centers = _get_obstacle_centers(map, obs_max)
     for c in centers:
-        rad = int(round(np.random.uniform(low=-0.25, high=0.25) * obs_radius))
+        rad = int(round(np.random.uniform(low=0.75, high=1.25) * obs_radius))
         _paint_circle(map, c, rad)
 
     return map
@@ -88,8 +89,8 @@ def _marshal_path_for_plot(path: List[Tuple[int, int]]) -> Tuple[List[int], List
     x = []
     y = []
     for p in path:
-        x.append(p[0])
-        y.append(p[1])
+        x.append(p[1])
+        y.append(p[0])
 
     return (x, y)
 
@@ -101,7 +102,8 @@ def generate_random_obstacle_map(
         size: Tuple[int, int],
         obstacle: str = "blob",
         obs_max: int = 10,
-        obs_radius: float = 10) -> np.array:
+        obs_radius: float = 10,
+        blur_sigma: float = 0.0) -> np.array:
     """
     creates a grid map of obstacles and clear space to a defined size
     :param size:       the (x,y) dimensions of the map
@@ -121,18 +123,19 @@ def generate_random_obstacle_map(
     else:
         raise Exception(f"obstacle type {obstacle} is unknown")
 
-    return _blur_map(map)
+    return _blur_map(map, sigma=blur_sigma)
 
 
-def plot_map(map: np.array, path: List[Tuple[int, int]] = None, scale=1.0) -> None:
+def plot_map(map: np.array, path: List[Tuple[int, int]] = None, scale=1.0, visited: Tuple[List[int], List[int]] = None) -> None:
     """
     Use Matplotlib to plot the obstacle map and the path
     :param map:   the 2D obstacle map
-    :param path:  the 2D path through the map
+    :param path:  the 2D path through the map (row, col in grid map)
     :param scale: scaling factor for the map and path TODO: IMPLEMENT
+    :param visited: a tuple containing the x and y coordinates of the visited nodes
     """
     fig = plt.figure()
-    plt.title("Obstacle Map and Path", fontsize=20)
+    plt.title("Obstacle Map and Path (A*)", fontsize=20)
     plt.xlabel("X", fontsize=15)
     plt.ylabel("Y", fontsize=15)
 
@@ -144,19 +147,36 @@ def plot_map(map: np.array, path: List[Tuple[int, int]] = None, scale=1.0) -> No
         path_x, path_y = _marshal_path_for_plot(path)
 
         plt.plot(path_x, path_y,
-                 color="DodgerBlue",
+                 color="Salmon",
                  label="Robot Path")
 
         plt.plot(path_x[0], path_y[0],
-                 color="DodgerBlue",
+                 color="OrangeRed",
                  marker='o',
-                 markersize=8,
+                 markersize=5,
+                 linewidth=0,
                  label="Start Point")
         plt.plot(path_x[-1], path_y[-1],
-                 color="DodgerBlue",
-                 marker='d',
-                 markersize=8,
+                 color="OrangeRed",
+                 marker='*',
+                 linewidth=0,
+                 markersize=9,
                  label="Goal Point")
+
+    if visited:
+        for i in range(0, len(visited[0])):
+            plt.plot(visited[0][i], visited[1][i],
+                     color="Peru",
+                     marker='o',
+                     alpha=0.1,
+                     markeredgewidth=0.0,
+                     markersize=5)
+
+        plt.plot([], [],
+                 color="Peru", marker='o', markersize=5, linewidth=0, label="Visited Points")
+
+        plt.plot([], [],
+                 color='k', marker='s', markersize=5, linewidth=0, label="Obstacle")
 
     plt.legend(fontsize=15)
     plt.grid()
