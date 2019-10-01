@@ -23,7 +23,7 @@ class Pqueue:
     def insert(self, data: Tuple[float, Any]) -> None:
         if data not in self._data:
             self._data.append(data)
-            self._data.sort()
+            self.resort()
 
     def pop(self) -> Any:
         """
@@ -35,6 +35,9 @@ class Pqueue:
         best = self._data[0][1]
         self._data = self._data[1:]
         return best
+
+    def resort(self) -> None:
+        self._data.sort()
 
     def remove(self, data: Tuple[float, Any]) -> None:
         self._data.remove(data)

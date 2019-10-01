@@ -27,7 +27,9 @@ class Node:
         self.pose = pose
         self.row = self.pose[0]
         self.col = self.pose[1]
-        self.cost: float = cost
+        self.f: float = cost
+        self.g: float = cost
+        self.h: float = cost
         self.parent: Node = parent
 
     def __key(self):
@@ -45,10 +47,10 @@ class Node:
         return not self.__eq__(other)
 
     def __lt__(self, other):
-        return self.cost < other.cost
+        return self.f < other.f
 
     def __gt__(self, other):
-        return self.cost > other.cost
+        return self.f > other.f
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Custom Exceptions
@@ -163,8 +165,14 @@ class AStar:
         for node in closed_set:
             self.visited.append(node.pose)
 
-    # ----------------------------------------------------------------------------------------------------------------------
-    # Public Methods
+    def _is_obstacle(self, node: Node, gridmap: np.array, threshold=0):
+        node_value = gridmap[node.pose[0]][node.pose[1]]
+        print(
+            f"dbg *** the node value is {node_value}, is obs = {node_value>threshold}")
+        return node_value > threshold
+
+        # ----------------------------------------------------------------------------------------------------------------------
+        # Public Methods
 
     def marshal_visited_for_plot(self) -> Tuple[List[int], List[int]]:
         x = []
@@ -198,7 +206,7 @@ class AStar:
 
         # purge all the out of bounds nodes
         true_neighbors = []
-        for i, n in enumerate(neighbors):
+        for _, n in enumerate(neighbors):
             if n.pose[0] < 0 or n.pose[1] < 0 or shape[0] <= n.pose[0] or shape[1] <= n.pose[1]:
                 continue
             else:
@@ -269,28 +277,31 @@ class AStar:
             current_node = open.pop()
             closed.add(current_node)
 
+            # check goal arrival
             if current_node == goal_node:
-                self._save_closed(closed)
+                self._save_closed(closed)  # TODO: This is really clunky
                 return self._reconstruct_path(current_node)
 
             neighbor_nodes = neighbor_function(
                 self, current_node, gridmap.shape)
 
             for n in neighbor_nodes:
-                if n in closed:
+
+                if n in closed or self._is_obstacle(n, gridmap):
                     continue
 
-                self.visited.append(n.pose)
-
-                # THESE SCORES DO NOT LOOK RIGHT!!
-                n_g = current_node.cost + \
-                    self._distance(n.pose, current_node.pose)
-                if n_g < n.cost:
+                if not open.contains(n):
                     n.parent = current_node
-                    n.cost = n_g
+                    n.g = self._g(n)
+                    n.h = self._h(n.pose, goal_node.pose)
+                    n.f = n.g + n.h
+                    open.insert((n.f, n))
 
-                    if not open.contains(n):
-                        open.insert(
-                            (self._g(n.pose) + self._h(n.pose, goal_node.pose),  n))
+                else:
+                    if self._g(n) < n.g:
+                        n.g = self._g(n)
+                        n.f = n.g + n.h
+                        n.parent = current_node
+                        open.resort()
 
         raise NoPathError()

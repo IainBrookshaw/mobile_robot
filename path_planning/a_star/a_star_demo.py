@@ -36,6 +36,6 @@ if __name__ == "__main__":
     print(f"A* demonstration\nMoving the robot from {start} to {goal}")
 
     planner = a_star.AStar()
-
     path = planner.plan(map, start, goal)
-    maps.plot_map(map, path=path, visited=planner.marshal_visited_for_plot())
+    maps.plot_map(map, path=path,
+                  visited=planner.marshal_visited_for_plot())
