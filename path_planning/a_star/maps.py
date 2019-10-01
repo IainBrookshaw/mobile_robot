@@ -15,10 +15,11 @@ import numpy as np
 # Private Helper Methods
 
 
-def _blur_map(map: np.array, sigma=11) -> np.array:
+def _blur_map(map: np.array, sigma=40) -> np.array:
     """
     fuzzify the edges of the obstacles to make the map non-binary
     :param map: the numpy matrix representing the binary map
+    :return: the blured map (this is also an in place operation)
     """
     return gaussian_filter(map, sigma=sigma)
 
@@ -80,7 +81,7 @@ def _create_rect_obstacles(map: np.array, obs_max: int, obs_radius: float) -> np
     return map
 
 
-def _marshal_path(path: List[Tuple[int, int]]) -> Tuple[List[int], List[int]]:
+def _marshal_path_for_plot(path: List[Tuple[int, int]]) -> Tuple[List[int], List[int]]:
     """
     Re-arranges the path pairs into x and y lists
     """
@@ -120,7 +121,7 @@ def generate_random_obstacle_map(
     else:
         raise Exception(f"obstacle type {obstacle} is unknown")
 
-    return map  # _blur_map(map)
+    return _blur_map(map)
 
 
 def plot_map(map: np.array, path: List[Tuple[int, int]] = None, scale=1.0) -> None:
@@ -140,11 +141,25 @@ def plot_map(map: np.array, path: List[Tuple[int, int]] = None, scale=1.0) -> No
 
     # plot the path
     if path:
-        path_x, path_y = _marshal_path(path)
+        path_x, path_y = _marshal_path_for_plot(path)
+
         plt.plot(path_x, path_y,
                  color="DodgerBlue",
                  label="Robot Path")
 
+        plt.plot(path_x[0], path_y[0],
+                 color="DodgerBlue",
+                 marker='o',
+                 markersize=8,
+                 label="Start Point")
+        plt.plot(path_x[-1], path_y[-1],
+                 color="DodgerBlue",
+                 marker='d',
+                 markersize=8,
+                 label="Goal Point")
+
+    plt.legend(fontsize=15)
+    plt.grid()
     plt.show()
 
 
@@ -152,6 +167,6 @@ def plot_map(map: np.array, path: List[Tuple[int, int]] = None, scale=1.0) -> No
 # TESTING
 if __name__ == "__main__":
     map = generate_random_obstacle_map(
-        (1000, 1000), obstacle="blob", obs_radius=500, obs_max=10)
+        (1000, 1000), obstacle="blob", obs_radius=500, obs_max=40)
 
-    plot_map(map)
+    plot_map(map, path=[(100, 100), (400, 400)])
