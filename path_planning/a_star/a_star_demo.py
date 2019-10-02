@@ -14,7 +14,7 @@ import maps
 from planner import GridMapPlanner
 
 
-def _generate_random_start(map: np.array, max_tries=100) -> Tuple[Tuple[int, int], Tuple[int, int]]:
+def _generate_random_start_end(map: np.array, max_tries=100) -> Tuple[Tuple[int, int], Tuple[int, int]]:
     """
     Keep trying until two clear points are located
     they are not guaranteed to be connected by a path
@@ -36,7 +36,7 @@ def _generate_random_start(map: np.array, max_tries=100) -> Tuple[Tuple[int, int
         if 0 == map[start[0]][start[1]] and 0 == map[goal[0]][goal[1]]:
             break
 
-        if attempt > max_tries:
+        if max_tries < attempt:
             raise Exception(
                 f"Could not find start or goal in {attempt} tries. Try another map")
         attempt += 1
@@ -56,18 +56,18 @@ if __name__ == "__main__":
         (map_rows, map_cols),
         obstacle="blob",
         obs_radius=10,
-        obs_max=8,
-        blur_sigma=0
+        obs_max=10,
+        blur_sigma=2
     )
-    start, goal = _generate_random_start(gridmap)
+    start, goal = _generate_random_start_end(gridmap)
 
     print(f"A* demonstration\nMoving the robot from {start} to {goal}")
     planner = a_star.AStar()
-    path = planner.plan(gridmap, start, goal)
+    path = planner.plan(gridmap, start, goal, threshold=0.25)
 
-    plottable_path = GridMapPlanner.marshal_pose_list_for_plot(path)
-    plottable_visited = GridMapPlanner.marshal_pose_list_for_plot(
-        planner.visited)
-
-    plot = planner.plot_path(gridmap, plottable_path, plottable_visited)
+    plot = planner.plot_path(
+        gridmap,
+        GridMapPlanner.marshal_pose_list_for_plot(path),
+        GridMapPlanner.marshal_pose_list_for_plot(planner.visited),
+    )
     plt.show()

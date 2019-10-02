@@ -32,8 +32,13 @@ class Pqueue:
         if len(self._data) == 0:
             raise Exception
 
-        best = self._data[0][1]
-        self._data = self._data[1:]
+        tie_idx = self._have_ties()
+        if 0 < tie_idx:
+            best = self._break_tie(tie_idx)
+            self._data = self._data[tie_idx:]
+        else:
+            best = self._data[0][1]
+            self._data = self._data[1:]
         return best
 
     def resort(self) -> None:
@@ -50,3 +55,30 @@ class Pqueue:
             if node in d:
                 return True
         return False
+
+    def _have_ties(self):
+        first = self._data[0]
+        tie_count = 0
+        for d in range(1, len(self._data)):
+            if self._data[d] == first:
+                tie_count += 1
+            else:
+                break
+
+        return tie_count
+
+    def _break_tie(self, tie_end):
+        ties = self._data[0:tie_end]
+        min_dist2 = 1e9
+        best = None
+
+        for t in ties:
+            d_row = t[1].pose[0] - goal[0]
+            d_col = t[1].pose[1] - goal[1]
+            d2 = d_row*d_row + d_col*d_col
+
+            if d2 < min_dist2:
+                min_dist2 = d2
+                best = t
+
+        return best

@@ -8,115 +8,68 @@ MIT License
 
 import unittest
 import numpy as np
+import matplotlib.pyplot as plt
 
-import a_star
-
-
-class TestNode(unittest.TestCase):
-
-    def test_eq(self):
-        n1 = a_star.Node(pose=(0, 0))
-        self.assertTrue(n1 == a_star.Node(pose=(0, 0)))
-        self.assertFalse(n1 == a_star.Node(pose=(0, 1)))
-
-    def test_in(self):
-        n1 = a_star.Node(pose=(0, 0))
-        nodes = [
-            a_star.Node(pose=(0, 0)),
-            a_star.Node(pose=(0, 1)),
-            a_star.Node(pose=(0, 2))
-        ]
-        self.assertTrue(n1 in nodes)
-        self.assertTrue(a_star.Node(pose=(0, 0)) in nodes)
-
-        n2 = a_star.Node(pose=(1, 1))
-        self.assertFalse(n2 in nodes)
-
-    def test_less_than(self):
-        n1 = a_star.Node()
-        n1.cost = 1234.5678
-        n2 = a_star.Node()
-        n2.cost = 0.0
-
-        self.assertTrue(n1 > n2)
-        self.assertFalse(n1 < n2)
+from planner import GridMapPlanner, Node
+from a_star import AStar
 
 
 class TestAStar(unittest.TestCase):
 
-    def test_get_neighbors8(self):
+    def setUp(self):
+        self.planner = AStar(threshold=1)
 
-        rows = 10
-        cols = 10
-        grid = np.zeros((rows, cols))
+    def test_g(self):
+        node1 = Node(pose=(0, 0))
+        node2 = Node(pose=(1, 1))
+        node3 = Node(pose=(2, 2))
+        #
+        node1.parent = None
+        node2.parent = node1
+        node3.parent = node2
+        #
+        node1.g = 0
+        node2.g = np.sqrt(2)
+        node3.g = 2*np.sqrt(2)
 
-        r2 = int(rows/2.0)
-        c2 = int(cols/2.0)
+        start = node1
 
-        # dict of pose (key) and neighbors expected (value)
-        poses = {
-            (0, 0): [(0, 1), (1, 0), (1, 1)],
-            (rows-1, cols-1): [(rows-2, cols-2), (rows-2, cols-1), (rows-1, cols-2)],
-            (r2, c2):
-                [(r2-1, c2),    # N
-                 (r2-1, c2+1),  # NE
-                 (r2,   c2+1),  # E
-                 (r2+1, c2+1),  # SE
-                 (r2+1, c2),    # S
-                 (r2+1, c2-1),  # SW
-                 (r2,   c2-1),  # W
-                 (r2-1, c2-1)]  # NW
-        }
+        g_costs = [
+            (self.planner._g(node1, start), 0),
+            (self.planner._g(node2, start), np.sqrt(2)),
+            (self.planner._g(node3, start), 2*np.sqrt(2))
+        ]
+        for g in g_costs:
+            self.assertAlmostEqual(g[0], g[1])
 
-        for p in poses:
-            neighbors = a_star.get_neighbors8(a_star.Node(pose=p), grid.shape)
+    def test_h(self):
 
-            # check the correct number of poses was returned
-            self.assertEqual(len(neighbors), len(poses[p]))
+        node = Node(pose=(0, 0))
+        goal = Node(pose=(10, 10))
 
-            # check the returned poses was as expected
-            for n in neighbors:
-                self.assertTrue(n.pose in poses[p])
+        actual = self.planner._h(node, goal)
+        expected = np.sqrt(10*10 + 10*10)
 
-    def test_get_neighbors4(self):
-
-        rows = 10
-        cols = 10
-        grid = np.zeros((rows, cols))
-
-        r2 = int(rows/2.0)
-        c2 = int(cols/2.0)
-
-        # dict of pose (key) and neighbors expected (value)
-        poses = {
-            (0, 0): [(0, 1), (1, 0)],
-            (rows-1, cols-1): [(rows-2, cols-1), (rows-1, cols-2)],
-            (r2, c2):
-                [(r2-1, c2),    # N
-                 (r2,   c2+1),  # E
-                 (r2+1, c2),    # S
-                 (r2,   c2-1)]  # W
-        }
-
-        for p in poses:
-            neighbors = a_star.get_neighbors4(a_star.Node(pose=p), grid.shape)
-
-            # check the correct number of poses was returned
-            self.assertEqual(len(neighbors), len(poses[p]))
-
-            # check the returned poses was as expected
-            for n in neighbors:
-                self.assertTrue(n.pose in poses[p])
+        self.assertAlmostEqual(expected, actual)
 
     def test_plan(self):
 
         gridmap = np.zeros((5, 5))
         start = (0, 0)
         end = (4, 4)
-        path = a_star.plan(gridmap, start, end)
-        print(f"dbg *** the final path is: {path}")
+        try:
+            path = self.planner.plan(gridmap, start, end)
+        except Exception as e:
+            self.fail(e)
 
-        # self.assertEquals(len(path), 5)
+        self.assertEqual(len(path), 5)
+
+        self.planner.plot_path(
+            gridmap,
+            GridMapPlanner.marshal_pose_list_for_plot(path),
+            GridMapPlanner.marshal_pose_list_for_plot(self.planner.visited)
+        )
+        plt.show()
 
 
 if __name__ == "__main__":
