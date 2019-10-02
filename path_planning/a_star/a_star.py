@@ -6,28 +6,11 @@ Copyright (c), 2019. All Rights Reserved
 MIT License
 """
 from typing import Tuple, Dict, List, Callable
+import matplotlib.pyplot as plt
 import numpy as np
-# import queue
+
 from pqueue import Pqueue
-from planner import Node, GridMapPlanner
-
-# ----------------------------------------------------------------------------------------------------------------------
-# Custom Exceptions
-
-
-class OutOfBounds(Exception):
-    """Exception for leaving the gridmap"""
-    pass
-
-
-class MapError(Exception):
-    """Exception for problems with the map"""
-    pass
-
-
-class NoPathError(Exception):
-    """Exception for no possible path from start to goal, run out of map to search"""
-    pass
+from planner import Node, GridMapPlanner, OutOfBoundsError, MapError, NoPathError
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Helper Functions
@@ -36,32 +19,20 @@ class NoPathError(Exception):
 class AStar(GridMapPlanner):
     """
     This is our implementation of the A* planner
-    todo:
-        - abstract planner to general
-        - make most ofthe helpers @classmethod statics
     """
 
     def __init__(self):
-        self.visited: List[Tuple[int, int]] = []
+        super().__init__()
+
     # ----------------------------------------------------------------------------------------------------------------------
-        # Public Methods
-
-    def marshal_visited_for_plot(self) -> Tuple[List[int], List[int]]:
-        x = []
-        y = []
-        for v in self.visited:
-            x.append(v[1])
-            y.append(v[0])
-
-        return (x, y)
+    # Public Methods
 
     def plan(self,
              gridmap: np.array,
              start: Tuple[int, int],
              goal: Tuple[int, int],
              neighbor_function: Callable[
-                 [Node, Tuple[int, int]],
-            List[Node]] = GridMapPlanner.get_neighbors8) -> List[Tuple[int, int]]:
+                 [Node, Tuple[int, int]], List[Node]] = GridMapPlanner.get_neighbors) -> List[Tuple[int, int]]:
         """
         Plans a path from 'start' to 'end' poses using the A * algorithm
         """
@@ -91,7 +62,7 @@ class AStar(GridMapPlanner):
                 return self._reconstruct_path(current_node)
 
             neighbor_nodes = neighbor_function(
-                current_node, gridmap.shape)
+                current_node, gridmap.shape, connected=8)
 
             for n in neighbor_nodes:
 
@@ -112,9 +83,78 @@ class AStar(GridMapPlanner):
                         n.parent = current_node
                         open.resort()
 
-        raise NoPathError()
+        raise NoPathError
+
+    def plot_path(self, gridmap: np.array,
+                  path: Tuple[List[int], List[int]],
+                  visited: Tuple[List[int], List[int]]) -> plt.Figure:
+        """
+        Use Matplotlib to plot the obstacle map and the path
+        :param map:   the 2D obstacle map
+        :param path:  the 2D path through the map (row, col in grid map)
+        :param scale: scaling factor for the map and path TODO: IMPLEMENT
+        :param visited: a tuple containing the x and y coordinates of the visited nodes
+        """
+        fig = plt.figure()
+        plt.title("Obstacle Map and Path (A* Planner)", fontsize=18)
+        plt.xlabel("X (units)", fontsize=15)
+        plt.ylabel("Y (units)", fontsize=15)
+
+        # plot the map
+        plt.imshow(gridmap, cmap="bone_r")
+
+        # plot the path
+        plt.plot(path[1], path[0],
+                 color="Salmon",
+                 label="Robot Path")
+
+        # plot the start and end points
+        plt.plot(path[1][0], path[1][0],
+                 color="OrangeRed",
+                 marker='o',
+                 markersize=5,
+                 linewidth=0,
+                 label="Start Point")
+        plt.plot(path[1][-1], path[0][-1],
+                 color="OrangeRed",
+                 marker='*',
+                 linewidth=0,
+                 markersize=9,
+                 label="Goal Point")
+
+        # plot all the visited nodes
+        for i in range(0, len(visited[0])):
+            plt.plot(visited[0][i], visited[1][i],
+                     color="Peru",
+                     marker='o',
+                     alpha=0.1,
+                     markeredgewidth=0.0,
+                     markersize=5)
+
+        # plot some empties so that obstacles and visited nodes will show in the legend
+        plt.plot([], [],
+                 color="Peru", marker='o', markersize=5, linewidth=0, label="Visited Points")
+        plt.plot([], [],
+                 color='k', marker='s', markersize=5, linewidth=0, label="Obstacle")
+
+        plt.legend(bbox_to_anchor=(1, 0), fontsize=10, loc='upper right')
+        plt.grid()
+
+        return fig
 
     # ------------------------------------------------------------------------------------------------------------------
+
+    def _marshal_path_for_plot(self, path: List[Tuple[int, int]]) -> Tuple[List[int], List[int]]:
+        """
+        Re-arranges the path pairs into x and y lists
+        """
+        x = []
+        y = []
+        for p in path:
+            x.append(p[1])
+            y.append(p[0])
+
+        return (x, y)
 
     def _g(self, n: Node) -> float:
         return 0.0  # TODO: Implement
@@ -140,11 +180,11 @@ class AStar(GridMapPlanner):
         rows, cols = gridmap.shape
 
         if start[0] < 0 or start[1] < 0 or rows <= start[0] or cols <= start[1]:
-            raise OutOfBounds(
+            raise OutOfBoundsError(
                 f"starting pose {start} is out of map bounds {gridmap.shape}")
 
         if end[0] < 0 or end[1] < 0 or rows <= end[0] or cols <= end[1]:
-            raise OutOfBounds(
+            raise OutOfBoundsError(
                 f"ending pose {end} is out of map bounds {gridmap.shape}")
 
     def _is_node_in_open(self, node: Node, open: List[Tuple[float, Node]]) -> bool:

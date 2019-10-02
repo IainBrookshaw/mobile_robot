@@ -6,7 +6,6 @@ Copyright (c), 2019. All Rights Reserved
 MIT License
 """
 from typing import Tuple, Dict, List
-import matplotlib.pyplot as plt
 
 from scipy.ndimage.filters import gaussian_filter
 import numpy as np
@@ -81,18 +80,6 @@ def _create_rect_obstacles(map: np.array, obs_max: int, obs_radius: float) -> np
     return map
 
 
-def _marshal_path_for_plot(path: List[Tuple[int, int]]) -> Tuple[List[int], List[int]]:
-    """
-    Re-arranges the path pairs into x and y lists
-    """
-    x = []
-    y = []
-    for p in path:
-        x.append(p[1])
-        y.append(p[0])
-
-    return (x, y)
-
 # ----------------------------------------------------------------------------------------------------------------------
 # Public Map Generation and Plotting Methods
 
@@ -123,69 +110,3 @@ def generate_random_obstacle_map(
         raise Exception(f"obstacle type {obstacle} is unknown")
 
     return _blur_map(map, sigma=blur_sigma)
-
-
-def plot_map(map: np.array, path: List[Tuple[int, int]] = None, scale=1.0, visited: Tuple[List[int], List[int]] = None) -> None:
-    """
-    Use Matplotlib to plot the obstacle map and the path
-    :param map:   the 2D obstacle map
-    :param path:  the 2D path through the map (row, col in grid map)
-    :param scale: scaling factor for the map and path TODO: IMPLEMENT
-    :param visited: a tuple containing the x and y coordinates of the visited nodes
-    """
-    fig = plt.figure()
-    plt.title("Obstacle Map and Path (A*)", fontsize=20)
-    plt.xlabel("X", fontsize=15)
-    plt.ylabel("Y", fontsize=15)
-
-    # plot the map
-    plt.imshow(map, cmap="bone_r")
-
-    # plot the path
-    if path:
-        path_x, path_y = _marshal_path_for_plot(path)
-
-        plt.plot(path_x, path_y,
-                 color="Salmon",
-                 label="Robot Path")
-
-        plt.plot(path_x[0], path_y[0],
-                 color="OrangeRed",
-                 marker='o',
-                 markersize=5,
-                 linewidth=0,
-                 label="Start Point")
-        plt.plot(path_x[-1], path_y[-1],
-                 color="OrangeRed",
-                 marker='*',
-                 linewidth=0,
-                 markersize=9,
-                 label="Goal Point")
-
-    if visited:
-        for i in range(0, len(visited[0])):
-            plt.plot(visited[0][i], visited[1][i],
-                     color="Peru",
-                     marker='o',
-                     alpha=0.1,
-                     markeredgewidth=0.0,
-                     markersize=5)
-
-        plt.plot([], [],
-                 color="Peru", marker='o', markersize=5, linewidth=0, label="Visited Points")
-
-        plt.plot([], [],
-                 color='k', marker='s', markersize=5, linewidth=0, label="Obstacle")
-
-    plt.legend(fontsize=10, loc='upper right')
-    plt.grid()
-    plt.show()
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# TESTING
-if __name__ == "__main__":
-    map = generate_random_obstacle_map(
-        (1000, 1000), obstacle="blob", obs_radius=500, obs_max=40)
-
-    plot_map(map, path=[(100, 100), (400, 400)])
