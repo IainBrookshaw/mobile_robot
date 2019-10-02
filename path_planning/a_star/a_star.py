@@ -102,33 +102,13 @@ class AStar(GridMapPlanner):
         :param scale: scaling factor for the map and path TODO: IMPLEMENT
         :param visited: a tuple containing the x and y coordinates of the visited nodes
         """
-        fig = plt.figure()
+        fig = plt.figure(figsize=(10, 10))
         plt.title("Obstacle Map and Path (A* Planner)", fontsize=18)
         plt.xlabel("X (units)", fontsize=15)
         plt.ylabel("Y (units)", fontsize=15)
 
         # plot the map
         plt.imshow(gridmap, cmap="bone_r")
-
-        # plot the path
-        plt.plot(path[1], path[0],
-                 color="Salmon",
-                 label="Robot Path")
-
-        # plot the start and end points
-        plt.plot(path[1][0], path[0][0],
-                 color="OrangeRed",
-                 marker='o',
-                 markersize=5,
-                 linewidth=0,
-                 label="Start Point")
-
-        plt.plot(path[1][-1], path[0][-1],
-                 color="OrangeRed",
-                 marker='*',
-                 linewidth=0,
-                 markersize=9,
-                 label="Goal Point")
 
         # plot all the visited nodes
         plt.plot(visited[1], visited[0],
@@ -137,15 +117,39 @@ class AStar(GridMapPlanner):
                  alpha=0.1,
                  linewidth=0.0,
                  markeredgewidth=0.0,
-                 markersize=5)
+                 markersize=5,
+                 label="Visited Node")
 
-        # plot some empties so that obstacles and visited nodes will show in the legend
-        # plt.plot([], [],
-        #          color="Peru", marker='o', markersize=5, linewidth=0, label="Visited Points")
+        # plot the path
+        plt.plot(path[1], path[0],
+                 color="Red",
+                 label="Robot Path")
+
+        # plot the start point
+        plt.plot(path[1][0], path[0][0],
+                 color="OrangeRed",
+                 marker='o',
+                 markersize=6,
+                 linewidth=0,
+                 markeredgecolor="Black",
+                 markeredgewidth=0.5,
+                 label="Start Point")
+
+        # plot the end point
+        plt.plot(path[1][-1], path[0][-1],
+                 color="OrangeRed",
+                 marker='*',
+                 linewidth=0,
+                 markersize=10,
+                 markeredgecolor="Black",
+                 markeredgewidth=0.5,
+                 label="Goal Point")
+
+        # plot empty 'obstacle' for legend
         plt.plot([], [],
                  color='k', marker='s', markersize=5, linewidth=0, label="Obstacle")
 
-        plt.legend(bbox_to_anchor=(1, 1), fontsize=10, loc='upper right')
+        plt.legend(bbox_to_anchor=(1.5, 1), fontsize=10, loc='upper right')
         plt.grid()
 
         return fig
