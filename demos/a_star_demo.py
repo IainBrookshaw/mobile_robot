@@ -57,7 +57,7 @@ if __name__ == "__main__":
     gridmap = generate_random_obstacle_map(
         (map_rows, map_cols),
         obstacle="blob",
-        obs_radius=10,
+        obs_radius=15,
         obs_max=10,
         blur_sigma=2
     )

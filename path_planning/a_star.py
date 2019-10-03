@@ -113,11 +113,11 @@ class AStar(GridMapPlanner):
         # plot all the visited nodes
         plt.plot(visited[1], visited[0],
                  color="Peru",
-                 marker='o',
+                 marker='s',
                  alpha=0.1,
                  linewidth=0.0,
                  markeredgewidth=0.0,
-                 markersize=5,
+                 markersize=7,
                  label="Visited Node")
 
         # plot the path
