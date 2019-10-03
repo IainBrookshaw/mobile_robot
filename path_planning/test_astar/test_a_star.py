@@ -10,14 +10,14 @@ import unittest
 import numpy as np
 import matplotlib.pyplot as plt
 
-from planner import GridMapPlanner, Node
-from a_star import AStar
+from path_planning.planner import GridMapPlanner, Node
+from path_planning.a_star import AStar
 
 
 class TestAStar(unittest.TestCase):
 
     def setUp(self):
-        self.planner = AStar(threshold=1)
+        self.planner = AStar()
 
     def test_g(self):
         node1 = Node(pose=(0, 0))
