@@ -4,9 +4,8 @@ Differential Drive Robot: Main Program
 Iain Brookshaw
 21 September 2019
 """
-from odometry import DDriveOdometry as Odo
-from simulator import SimulationConfig as Config
-from simulator import SimulationAnimation as Sim
+from ddrive.odometry import DDriveOdometry as Odo
+from ddrive.simulator import SimulationConfig, SimulationAnimation
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -18,7 +17,7 @@ import time
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Robot Chassis Constants
-# When run as an executable, these may be set by the args
+# TODO: When run as an executable, these may be set by the args
 
 _max_history: int = 1000
 _robot_wheelbase: float = 0.03       # meters
@@ -36,7 +35,7 @@ _minimum_min_y: float = -0.1
 _start_pose: Tuple(float, float) = (0.0, 0.0)
 
 
-_config = Config()
+_config = SimulationConfig()
 
 # TODO:
 _config.max_history = 1000
@@ -92,16 +91,14 @@ if __name__ == "__main__":
     if args.dark:
         _config.colors["background"] = "#0d0d0f"
         _config.colors["text_color"] = "#fce5c7"
-        _config.colors["robot"]
-    _text_color = "#fce5c7" if args.dark else _bg_color
-    _robot_color = "DodgerBlue" if args.dark else "Blue"
-    _ground_truth_color = "DodgerBlue" if args.dark else "Blue"
-    _odo_path_color = "Coral" if args.dark else "Red"
+        _config.colors["robot_color"] = "DodgerBlue"
 
-    # The Simulation
-    # TODO: make the input args non-global
-    sim = SimulationAnimation(start_pose, _robot_wheelbase, _delta_t)
+    else:
+        _config.colors["background"] = "White"
+        _config.colors["text_color"] = "Black"
+        _config.colors["robot_color"] = "DodgerBlue"
 
+    sim = SimulationAnimation(_config)
     anim = animation.FuncAnimation(
         sim.fig,
         sim.update_animation,

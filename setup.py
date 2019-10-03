@@ -20,7 +20,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
     scripts=[
-        "demos/diff_simulation.py",
+        "demos/ddrive.py",
         "demos/a_star_demo.py"],
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -24,33 +24,33 @@ class DDriveOdometry:
         :param epsilon: float - the error allowable when computing v_r == v_l (m/s)
         :returns: the new pose (x',y',theta'), which is also set internally as the next _old_pose
         """
-        if DiffDriveOdometry._compare_v(v_r, v_l, epsilon):
+        if DDriveOdometry._compare_v(v_r, v_l, epsilon):
             return (
                 v_r*delta_t * np.cos(self._old_pose[2]),
                 v_r*delta_t * np.sin(self._old_pose[2]),
                 self._old_pose[2]
             )
 
-        R = DiffDriveOdometry._compute_r(
+        R = DDriveOdometry._compute_r(
             v_l,
             v_r
         )
-        w = DiffDriveOdometry._compute_omega(
+        w = DDriveOdometry._compute_omega(
             v_l,
             v_r,
             self.wheelbase
         )
-        icc = DiffDriveOdometry._compute_icc(
+        icc = DDriveOdometry._compute_icc(
             R,
             self._old_pose[2],
             self._old_pose
         )
-        new_theta = DiffDriveOdometry._compute_new_theta(
+        new_theta = DDriveOdometry._compute_new_theta(
             self._old_pose[2],
             w,
             delta_t
         )
-        new_x, new_y = DiffDriveOdometry._compute_new_corrdinate(
+        new_x, new_y = DDriveOdometry._compute_new_corrdinate(
             self._old_pose,
             icc,
             w,
