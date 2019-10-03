@@ -6,12 +6,14 @@ Copyright (c), 2019. All Rights Reserved
 MIT License
 """
 import matplotlib.pyplot as plt
-from typing import Tuple
 import numpy as np
-import a_star
-import maps
+import time
 
-from planner import GridMapPlanner
+from typing import Tuple
+
+from path_planning.a_star import AStar
+from path_planning.planner import GridMapPlanner
+from path_planning.maps import generate_random_obstacle_map
 
 
 def _generate_random_start_end(map: np.array, max_tries=100) -> Tuple[Tuple[int, int], Tuple[int, int]]:
@@ -52,7 +54,7 @@ if __name__ == "__main__":
     map_rows = 100
     map_cols = 100
 
-    gridmap = maps.generate_random_obstacle_map(
+    gridmap = generate_random_obstacle_map(
         (map_rows, map_cols),
         obstacle="blob",
         obs_radius=10,
@@ -62,8 +64,11 @@ if __name__ == "__main__":
     start, goal = _generate_random_start_end(gridmap)
 
     print(f"A* demonstration\nMoving the robot from {start} to {goal}")
-    planner = a_star.AStar()
+    planner = AStar()
+    start_t = time.time()
     path = planner.plan(gridmap, start, goal, threshold=0.25)
+    end_t = time.time()
+    print("completed in {0:.2} seconds".format(end_t-start_t))
 
     plot = planner.plot_path(
         gridmap,

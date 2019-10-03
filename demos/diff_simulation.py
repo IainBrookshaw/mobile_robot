@@ -4,7 +4,7 @@ Differential Drive Robot: Simulator
 Iain Brookshaw
 21 September 2019
 """
-from odometry import DiffDriveOdometry as Odo
+from diff_sim.odometry import DiffDriveOdometry as Odo
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation

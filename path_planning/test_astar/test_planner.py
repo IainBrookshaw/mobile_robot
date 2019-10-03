@@ -8,7 +8,7 @@ MIT License
 
 import unittest
 import numpy as np
-from planner import Node, GridMapPlanner
+from path_planning.planner import Node, GridMapPlanner
 
 
 class TestNode(unittest.TestCase):

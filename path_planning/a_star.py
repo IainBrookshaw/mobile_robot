@@ -9,8 +9,8 @@ from typing import Tuple, Dict, List, Callable
 import matplotlib.pyplot as plt
 import numpy as np
 
-from pqueue import Pqueue
-from planner import Node, GridMapPlanner, OutOfBoundsError, MapError, NoPathError
+from path_planning.pqueue import Pqueue
+from path_planning.planner import Node, GridMapPlanner, OutOfBoundsError, MapError, NoPathError
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Helper Functions
@@ -56,7 +56,7 @@ class AStar(GridMapPlanner):
         # perform the A* search for a path...
         while open.size():
 
-            current_node = open.pop()
+            current_node = open.pop(goal)
             closed.add(current_node)
 
             # check goal arrival
@@ -102,7 +102,7 @@ class AStar(GridMapPlanner):
         :param scale: scaling factor for the map and path TODO: IMPLEMENT
         :param visited: a tuple containing the x and y coordinates of the visited nodes
         """
-        fig = plt.figure(figsize=(10, 10))
+        fig = plt.figure(figsize=(15, 10))
         plt.title("Obstacle Map and Path (A* Planner)", fontsize=18)
         plt.xlabel("X (units)", fontsize=15)
         plt.ylabel("Y (units)", fontsize=15)
@@ -149,7 +149,7 @@ class AStar(GridMapPlanner):
         plt.plot([], [],
                  color='k', marker='s', markersize=5, linewidth=0, label="Obstacle")
 
-        plt.legend(bbox_to_anchor=(1.5, 1), fontsize=10, loc='upper right')
+        plt.legend(bbox_to_anchor=(1.25, 1), fontsize=10, loc='upper right')
         plt.grid()
 
         return fig

@@ -25,7 +25,7 @@ class Pqueue:
             self._data.append(data)
             self.resort()
 
-    def pop(self) -> Any:
+    def pop(self, goal) -> Any:
         """
         Pops of the best node and returns it (the ranking is not returned)
         """
@@ -34,7 +34,7 @@ class Pqueue:
 
         tie_idx = self._have_ties()
         if 0 < tie_idx:
-            best = self._break_tie(tie_idx)
+            best = self._break_tie(tie_idx, goal)
             self._data = self._data[tie_idx:]
         else:
             best = self._data[0][1]
@@ -67,7 +67,7 @@ class Pqueue:
 
         return tie_count
 
-    def _break_tie(self, tie_end):
+    def _break_tie(self, tie_end, goal):
         ties = self._data[0:tie_end]
         min_dist2 = 1e9
         best = None
