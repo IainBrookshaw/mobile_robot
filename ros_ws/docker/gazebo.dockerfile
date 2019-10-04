@@ -6,7 +6,10 @@
 # to build: docker build -t myimagename .     # default 'Dockerfile'
 #           docker build -f FirstDockerfile . # custom dockerfile
 #
-FROM osrf/gazebo:gzserverX
+# references:
+#           https://hub.docker.com/_/gazebo
+#
+FROM gazebo:gzserver9
 
 
 
