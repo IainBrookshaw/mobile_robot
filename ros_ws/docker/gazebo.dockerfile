@@ -13,15 +13,15 @@
 #
 FROM osrf/ros:melodic-desktop-full-bionic
 
-RUN apt-get install -y \
-    libgazebo9-dev
+# copy all the gazebo plugins into this container
+RUN mkdir gazebo-plugin-libs
+COPY ./gazebo-plugin-libs gazebo-plugin-libs
+RUN export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:gazebo-plugin-libs
 
-# Build all the Gazebo plugins used by this mobile robot
-RUN scripts/build-gazebo-plugins.bash
+# copy all the gazebo worlds into this container
+RUN mkdir worlds
+COPY ./gazebo-worlds worlds
 
-# Export the path to the plugins
-
-
-
-CMD gazebo
+# todo: replace with master run script
+CMD gzserver worlds/empty.world --verbose
 
