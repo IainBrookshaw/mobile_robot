@@ -15,9 +15,6 @@ FROM osrf/ros:melodic-desktop-bionic
 #     ros-melodic-ros-control \
 #     ros-melodic-ros-controllers
 
-# # Our robot architecture
-# RUN scripts/build_install_robot_arch.bash
-
-# # Run the robot
-# CMD scripts/run_robot_arch.bash
+# Run the robot
+CMD scripts/ros.bash
 
