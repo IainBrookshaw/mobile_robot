@@ -15,6 +15,8 @@ FROM osrf/ros:melodic-desktop-bionic
 #     ros-melodic-ros-control \
 #     ros-melodic-ros-controllers
 
+VOLUME [ "/mobile-robot-ros" ]
+
 # Run the robot
 CMD scripts/ros.bash
 
