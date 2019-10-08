@@ -34,41 +34,46 @@ ros_run_container_name="mobile-robot-run-ros"
 # FUNCTIONS
 
 function quit(){
-    docker rm $gazebo_run_container_name > /dev/null 2>&1
-    docker rm $ros_run_container_name > /dev/null 2>&1
+
+    echo "run.bash: stopping gazebo container"
+    docker stop $gazebo_run_container_name > /dev/null 2>&1
+    docker rm   $gazebo_run_container_name > /dev/null 2>&1
+
+    echo "run.bash: stopping ros container"
+    docker stop $ros_run_container_name > /dev/null 2>&1
+    docker rm   $ros_run_container_name > /dev/null 2>&1
+    
     popd > /dev/null 2>&1
     exit $1
 }
 
 function run_gazebo(){
 
-    echo "Standing Up Gazebo Plugins"
-
-    docker run \
+    echo "run_gazebo: Standing Up Gazebo Plugins"
+    docker run  \
         --name $gazebo_run_container_name \
-        -v $gazebo_src_code_dir:$gazebo_volume \
-        -v $run_scripts_dir:$run_scripts_volume \
         --env RUN_MODE="run" \
-        $gazebo_img_name
+        --volume $gazebo_src_code_dir:$gazebo_volume \
+        --volume $run_scripts_dir:$run_scripts_volume \
+        --env="DISPLAY" \
+        --env="QT_X11_NO_MITSHM=1" \
+        --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+        $gazebo_img_name > /dev/null 2>&1
 
-    if [ $? -ne 0 ]; then
-        return 1
-    fi
-
-    echo "Connecting the Gazebo container to the hosts X-Server"
+    echo "run_gazebo: Connecting the Gazebo container to the hosts X-Server"
     export containerId=$(docker ps -l -q)
-    xhost +local:`docker inspect --format='' $containerId`
+    xhost +local:`docker inspect --format='{{ .Config.Hostname }}' $containerId`
     docker start $containerId
 
     return $?
 }
 
 function run_ros(){
-    echo "Building ROS Architecture"
-    # docker run \
-    #     --name build-ros \ 
-    #     --volume ../ros_ws \
-    #     $ros_img_name
+    echo "Running the ROS Architecture"
+    docker run \
+        --name $ros_run_container_name \ 
+        --volume ../ros_ws \
+        $ros_img_name
     return 0
 }
 
@@ -78,18 +83,12 @@ function run_ros(){
 pushd `pwd`
 cd `dirname "$0"`
 
-run_gazebo
-if [ $? -ne 0 ]; then
-    echo "ERROR: gazebo run failed!"
-    quit 1
-fi
-echo
+echo "run.bash: running gazebo container"
+run_gazebo > /dev/null 2>&1 &
 
-run_ros
-if [ $? -ne 0 ]; then
-    echo "ERROR: ros run failed"
-    quit 1
-fi
+echo "run.bash: running ros container"
+run_ros  > /dev/null 2>&1 &
 
-echo "Builds Complete"
+read -p "Press enter to stop both containers..."
+echo "Run Finished, closing containers"
 quit 0
