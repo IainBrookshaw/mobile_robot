@@ -1,0 +1,29 @@
+<launch>
+  <!-- 
+    Mobile Robot: Launchfile for the simulator
+    Iain Brookshaw
+    Copyright (c), 2019. All Rights Reserved
+    MIT License
+
+    This launches the stand-alone simulator with the mobile robot model and ROS
+    connections
+
+    To Run:
+      roslaunch mobile_robot_launch gazebo.launch
+    
+    Notes:
+      - the world_name is with respect to GAZEBO_RESOURCE_PATH environmental variable
+    -->
+  
+  <!-- start from the default empty world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+
+    <arg name="world_name"   value="$(find mobile_robot_gazebo)/worlds/mobile_robot_empty.world"/> 
+    <arg name="paused"       value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui"          value="true"/>
+    <arg name="recording"    value="false"/>
+    <arg name="debug"        value="false"/>
+  </include>
+  
+</launch>

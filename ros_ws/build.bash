@@ -13,13 +13,16 @@
 # PATHS
 
 # directories/volume mapping
-gazebo_src_code_dir="`pwd`/gazebo"
+_this_dir="$( cd "$(dirname "$0")" ; pwd -P )"
+echo "dbg *** this dir = $_this_dir"
+
+gazebo_src_code_dir=$_this_dir
 gazebo_volume="/gazebo"
 #
-build_scripts_dir="`pwd`/scripts"
+build_scripts_dir="$_this_dir/scripts"
 build_scripts_volume="/scripts"
 #
-ros_src="`pwd`/src"
+ros_src="$_this_dir/src"
 ros_volume="/ros"
 
 # container names
@@ -74,11 +77,11 @@ if [ $? -ne 0 ]; then
 fi
 echo
 
-build_ros
-if [ $? -ne 0 ]; then
-    echo "ERROR: ros build failed"
-    quit 1
-fi
+# build_ros
+# if [ $? -ne 0 ]; then
+#     echo "ERROR: ros build failed"
+#     quit 1
+# fi
 
 echo "Builds Complete"
 quit 0
