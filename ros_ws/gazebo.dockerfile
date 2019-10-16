@@ -17,7 +17,7 @@ RUN apt-get install -y \
 VOLUME ["/ros_ws", "/scripts"]
 
 # export the plugin libs path (necessary for running simulations, not build)
-RUN export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:/gazebo/gazebo-plugin-libs
+RUN export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:/ros_ws/src/mobile_robot_gazebo/plugin-libs
 
 # run the build scripts
 CMD /scripts/gazebo.bash

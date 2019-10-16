@@ -26,13 +26,14 @@ function quit(){
     docker stop $ros_docker_run_container_name > /dev/null 2>&1
     docker rm   $ros_docker_run_container_name > /dev/null 2>&1
     
-    quite_and_popd 0
+    quit_with_popd 0
 }
 
 function run_gazebo(){
 
-    echo -e "\trun_gazebo: Standing Up Gazebo Plugins"
-    docker run  \
+    echo -e "\trun_gazebo: Standing Up Gazebo Simulator"
+
+    docker run \
         --name $gazebo_docker_run_container_name \
         --volume $gazebo_src_volume_host_path:$gazebo_src_volume_name \
         --volume $gazebo_scripts_volume_host_path:$gazebo_scripts_volume_name \
@@ -40,7 +41,13 @@ function run_gazebo(){
         --env="DISPLAY" \
         --env="QT_X11_NO_MITSHM=1" \
         --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-        $gazebo_img_name > /dev/null 2>&1
+        $gazebo_docker_image_name  
+        
+    #> /dev/null 2>&1
+    if [ $? -ne 0 ]; then 
+        echo "ERROR: could not run the gazebo docker image"
+        quit 1
+    fi
 
     echo -e "\trun_gazebo: Connecting the Gazebo container to the hosts X-Server"
     export containerId=$(docker ps -l -q)
@@ -63,7 +70,7 @@ function run_ros(){
 # MAIN
 
 echo "run.bash: running gazebo container"
-run_gazebo > /dev/null 2>&1 &
+run_gazebo #> /dev/null 2>&1 &
 if [ $? -ne 0 ]; then
     echo "ERROR: could not start gazebo docker container!"
     quit 1
