@@ -9,54 +9,36 @@
 #
 # You must run the `build-docker-images.bash` script first for this to work
 
-# ----------------------------------------------------------------------------------------------------------------------
-# PATHS
-
-# directories/volume mapping
 _this_dir="$( cd "$(dirname "$0")" ; pwd -P )"
-echo "dbg *** this dir = $_this_dir"
+pushd `pwd` > /dev/null 2>&1
+cd $_this_dir
 
-gazebo_src_code_dir=$_this_dir
-gazebo_volume="/gazebo"
-#
-build_scripts_dir="$_this_dir/scripts"
-build_scripts_volume="/scripts"
-#
-ros_src="$_this_dir/src"
-ros_volume="/ros"
+source scripts/mobile-robot.bash
 
-# container names
-gazebo_img_name="mobile-robot-gazebo:latest"
-gazebo_build_container_name="mobile-robot-build-gazebo"
-
-ros_img_name="mobile-robot-ros:latest"
-ros_build_container_name="mobile-robot-build-ros"
 
 # ----------------------------------------------------------------------------------------------------------------------
 # FUNCTIONS
 
 function quit(){
-    docker rm $gazebo_build_container_name > /dev/null 2>&1
-    docker rm $ros_build_container_name > /dev/null 2>&1
-    popd > /dev/null 2>&1
-    exit $1
+    docker rm $gazebo_docker_build_container_name > /dev/null 2>&1
+    docker rm $ros_docker_build_container_name > /dev/null 2>&1
+    quit_with_popd
 }
 
 function build_gazebo(){
 
-    echo "Building Gazebo Plugins:"
     docker run \
-        --name $gazebo_build_container_name \
-        -v $gazebo_src_code_dir:$gazebo_volume \
-        -v $build_scripts_dir:$build_scripts_volume \
-        --env RUN_MODE="build" \
-        $gazebo_img_name
+        --name   $gazebo_docker_build_container_name \
+        --volume $gazebo_scripts_volume_host_path:$gazebo_scripts_volume_name \
+        --volume $gazebo_src_volume_host_path:$gazebo_src_volume_name \
+        --env RUN_MODE=$1 \
+        $gazebo_docker_image_name
 
     return $?
 }
 
 function build_ros(){
-    echo "Building ROS Architecture"
+    echo -e "\tbuild_ros: Building ROS Architecture"
     # docker run \
     #     --name build-ros \ 
     #     --volume ../ros_ws \
@@ -67,10 +49,12 @@ function build_ros(){
 # ----------------------------------------------------------------------------------------------------------------------
 # MAIN
 
-pushd `pwd`
-cd `dirname "$0"`
+build_flag="build"
+if [ "$1" == "clean" ]; then
+    build_flag="build-clean"
+fi
 
-build_gazebo
+build_gazebo $build_flag
 if [ $? -ne 0 ]; then
     echo "ERROR: gazebo build failed!"
     quit 1

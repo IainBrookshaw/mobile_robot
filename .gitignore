@@ -1,5 +1,6 @@
 *.pdf
-
+ros_ws/install
+.vscode
 
 # Created by https://www.gitignore.io/api/c++,ros,vim,latex,linux,macos,emacs,python,virtualenv,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=c++,ros,vim,latex,linux,macos,emacs,python,virtualenv,visualstudiocode
