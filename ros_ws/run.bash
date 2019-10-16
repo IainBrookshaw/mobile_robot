@@ -41,7 +41,7 @@ function run_gazebo(){
         --env="DISPLAY" \
         --env="QT_X11_NO_MITSHM=1" \
         --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-        $gazebo_docker_image_name  
+        $gazebo_docker_image_name 
         
     #> /dev/null 2>&1
     if [ $? -ne 0 ]; then 

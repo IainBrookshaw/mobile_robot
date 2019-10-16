@@ -9,11 +9,12 @@
 #
 # You must run the `build-docker-images.bash` script first for this to work
 
+
+source scripts/mobile-robot.bash
+
 _this_dir="$( cd "$(dirname "$0")" ; pwd -P )"
 pushd `pwd` > /dev/null 2>&1
 cd $_this_dir
-
-source scripts/mobile-robot.bash
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -39,11 +40,18 @@ function build_gazebo(){
 
 function build_ros(){
     echo -e "\tbuild_ros: Building ROS Architecture"
-    # docker run \
-    #     --name build-ros \ 
-    #     --volume ../ros_ws \
-    #     $ros_img_name
-    return 0
+    echo -e "dbg *** ROS scripts volume: $ros_scripts_volume_host_path:$ros_scripts_volume_name"
+    echo -e "dbg *** ROS src volume:     $ros_src_volume_host_path:$ros_src_volume_name"
+    echo -e "dbg *** running: $ros_docker_image_name as $ros_docker_build_container_name"
+    
+    docker run -it \
+        --name $ros_docker_build_container_name \
+        --volume $ros_scripts_volume_host_path:$ros_scripts_volume_name \
+        --volume $ros_src_volume_host_path:$ros_src_volume_name \
+        --env  RUN_MODE=$1 \
+        $ros_docker_image_name /bin/bash
+
+    return $?
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -54,18 +62,18 @@ if [ "$1" == "clean" ]; then
     build_flag="build-clean"
 fi
 
-build_gazebo $build_flag
-if [ $? -ne 0 ]; then
-    echo "ERROR: gazebo build failed!"
-    quit 1
-fi
-echo
-
-# build_ros
+# build_gazebo $build_flag
 # if [ $? -ne 0 ]; then
-#     echo "ERROR: ros build failed"
+#     echo "ERROR: gazebo build failed!"
 #     quit 1
 # fi
+# echo
+
+build_ros
+if [ $? -ne 0 ]; then
+    echo "ERROR: ros build failed"
+    quit 1
+fi
 
 echo "Builds Complete"
 quit 0
