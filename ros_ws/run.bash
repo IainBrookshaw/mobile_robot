@@ -8,7 +8,6 @@
 # Running this script will start up both the gazebo simulation and ROS architecture
 # containers 
 #
-
 _this_dir="$( cd "$(dirname "$0")" ; pwd -P )"
 pushd `pwd`
 cd $_this_dir
@@ -33,8 +32,6 @@ function quit(){
 
 function run_gazebo(){
 
-    echo -e "\trun_gazebo: Standing Up Gazebo Simulator"
-
     docker run \
         --name $gazebo_docker_run_container_name \
         --volume $gazebo_src_volume_host_path:$gazebo_src_volume_name \
@@ -43,7 +40,7 @@ function run_gazebo(){
         --env="DISPLAY" \
         --env="QT_X11_NO_MITSHM=1" \
         --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-        $gazebo_docker_image_name 
+        $gazebo_docker_image_name
         
     #> /dev/null 2>&1
     if [ $? -ne 0 ]; then 
@@ -71,21 +68,40 @@ function run_ros(){
 # ----------------------------------------------------------------------------------------------------------------------
 # MAIN
 
-echo "run.bash: running gazebo container"
+echo "---------------------------------------------------------------------------------"
+echo "Mobile Robot: Run All"
+echo "Copyright (c) 2019"
+echo 
+echo "Running the mobile robot with Gazebo Simulation"
+echo "using a Docker environment"
+echo "---------------------------------------------------------------------------------"
+echo 
+
+echo "GAZEBO:"
+echo -en "starting gazebo container..."
 run_gazebo #> /dev/null 2>&1 &
 if [ $? -ne 0 ]; then
+    echo
     echo "ERROR: could not start gazebo docker container!"
     quit 1
 fi
+echo " done"
 
-echo "run.bash: running ros container"
+echo
+echo "ROS:"
+echo -en "starting ros container..."
 run_ros  > /dev/null 2>&1 &
 if [ $? -ne 0 ]; then
+    echo
     echo "ERROR: could not start ROS docker container!"
     quit 1
 fi
+echo " done"
+echo
 
 echo "Both ROS and Gazebo containers started and running."
-read -p "Press <any key> to stop both containers: "
+read -ep "**** Press <any key> to stop both containers: "
 echo "Run Finished, closing both ROS and Gazebo containers..."
+echo
+
 quit 0
