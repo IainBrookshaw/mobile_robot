@@ -1,3 +1,5 @@
+#! /usr/bin/env bash
+#
 # Mobile Robot: Run ALL the robot
 # Iain Brookshaw
 # Copyright (c), 2019. All Rights Reserved

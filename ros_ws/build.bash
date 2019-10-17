@@ -1,3 +1,5 @@
+#! /usr/bin/env bash
+#
 # Mobile Robot: Run All the Build Docker Containers
 # Iain Brookshaw
 # Copyright (c), 2019. All Rights Reserved
@@ -8,7 +10,6 @@
 # robot docker image
 #
 # You must run the `build-docker-images.bash` script first for this to work
-
 
 source scripts/mobile-robot.bash
 
@@ -39,17 +40,12 @@ function build_gazebo(){
 }
 
 function build_ros(){
-    echo -e "\tbuild_ros: Building ROS Architecture"
-    echo -e "dbg *** ROS scripts volume: $ros_scripts_volume_host_path:$ros_scripts_volume_name"
-    echo -e "dbg *** ROS src volume:     $ros_src_volume_host_path:$ros_src_volume_name"
-    echo -e "dbg *** running: $ros_docker_image_name as $ros_docker_build_container_name"
-    
-    docker run -it \
+    docker run \
         --name $ros_docker_build_container_name \
         --volume $ros_scripts_volume_host_path:$ros_scripts_volume_name \
         --volume $ros_src_volume_host_path:$ros_src_volume_name \
         --env  RUN_MODE=$1 \
-        $ros_docker_image_name /bin/bash
+        $ros_docker_image_name
 
     return $?
 }
@@ -57,23 +53,38 @@ function build_ros(){
 # ----------------------------------------------------------------------------------------------------------------------
 # MAIN
 
+echo "---------------------------------------------------------------------------------"
+echo "Mobile Robot: Build All"
+echo "Copyright (c) 2019"
+echo 
+echo "Building All Gazebo Plugins and ROS Packages"
+echo "using a Docker build environment"
+echo "---------------------------------------------------------------------------------"
+echo 
+
 build_flag="build"
 if [ "$1" == "clean" ]; then
+    echo "Building ROS and Gazebo with \"clean\" flag. This will take a while"
     build_flag="build-clean"
 fi
 
-# build_gazebo $build_flag
-# if [ $? -ne 0 ]; then
-#     echo "ERROR: gazebo build failed!"
-#     quit 1
-# fi
-# echo
+echo "GAZEBO:"
+echo "Building all Gazebo plugins"
+build_gazebo $build_flag
+if [ $? -ne 0 ]; then
+    echo "ERROR: gazebo build failed!"
+    quit 1
+fi
+echo "Gazebo Build Done"
 
-build_ros
+echo -e "\nROS:"
+echo "Building ROS Architecture"
+build_ros $build_flag
 if [ $? -ne 0 ]; then
     echo "ERROR: ros build failed"
     quit 1
 fi
 
-echo "Builds Complete"
+echo "ROS Build Done"
+echo "---------------------------------------------------------------------------------" 
 quit 0
