@@ -14,9 +14,6 @@ RUN apt-get update
 RUN apt-get install -y \
     ros-melodic-gazebo-ros-pkgs \
     ros-melodic-gazebo-ros-control
-#     ros-melodic-gazebo-ros-control \
-#     ros-melodic-ros-control \
-#     ros-melodic-ros-controllers
 
 VOLUME [ "/mobile-robot-ros" ]
 

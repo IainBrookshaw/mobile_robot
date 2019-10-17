@@ -53,19 +53,20 @@ function build_ros(){
 # ----------------------------------------------------------------------------------------------------------------------
 # MAIN
 
-echo "---------------------------------------------------------------------------------"
-echo "Mobile Robot: Build All"
-echo "Copyright (c) 2019"
-echo 
-echo "Building All Gazebo Plugins and ROS Packages"
-echo "using a Docker build environment"
-echo "---------------------------------------------------------------------------------"
-echo 
+echo "
+ +--------------------------------------------------------------------------------+
+ | Mobile Robot: Build All                                                        |
+ | Copyright (c) 2019                                                             |
+ |                                                                                |
+ | Building All Gazebo Plugins and ROS Packages using a Docker build environment  |
+ +--------------------------------------------------------------------------------+
+"
 
 build_flag="build"
 if [ "$1" == "clean" ]; then
     echo "Building ROS and Gazebo with \"clean\" flag. This will take a while"
     build_flag="build-clean"
+    echo
 fi
 
 echo "GAZEBO:"
@@ -86,5 +87,8 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "ROS Build Done"
-echo "---------------------------------------------------------------------------------" 
+#
+echo
+echo "Closing Gazebo and ROS Docker Containers"
+echo "----------------------------------------------------------------------------------"
 quit 0
