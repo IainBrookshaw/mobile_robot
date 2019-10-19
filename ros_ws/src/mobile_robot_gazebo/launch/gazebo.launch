@@ -24,18 +24,21 @@
     <arg name="gui"          value="true"/>
     <arg name="recording"    value="false"/>
     <arg name="debug"        value="false"/>
+  
   </include>
 
-  <!-- Load the robot description -->
-  <arg name="model" default="$(find mobile_robot_gazebo)/urdf/mobile-robot-basic.urdf.xacro"/>
-  <param name="mobile_robot_description" command="$(find xacro)/xacro.py $(arg model)" />
+  <!-- Convert an xacro and put on parameter server -->
+  <param 
+    name    = "mobile_robot_description"
+    command = "$(find xacro)/xacro $(find mobile_robot_gazebo)/urdf/mobile_robot_basic.urdf.xacro" />
 
-  <!-- push robot_description to factory and spawn robot in gazebo -->
-  <node name = "urdf_spawner"
-        pkg  = "gazebo_ros"
-        type = "spawn_model"
-        args = "-z 1.0 -unpause -urdf -model robot -param mobile_robot_description"
-        respawn = "false"
-        output  = "screen" />
-  
+  <!-- Spawn a robot into Gazebo -->
+  <node 
+    name = "spawn_urdf"
+    pkg  = "gazebo_ros" 
+    type = "spawn_model"
+    respawn = "false"
+    output  = "screen"
+    args    = "-unpause -param mobile_robot_description -urdf -model mobile_robot" />
+      
 </launch>

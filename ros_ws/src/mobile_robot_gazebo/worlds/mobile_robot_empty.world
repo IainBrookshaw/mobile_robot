@@ -4,10 +4,13 @@
     Iain Brookshaw
     Copyright (c), 2019. All Rights Reserved
     MIT License
+
+    Note: The robot model is spawned by ROS Launch file
 -->
+
 <sdf version="1.4">
   <world name="empty-world">
-    <plugin name="hello_world" filename="gazebo-plugin-libs/libhello-world.so"/>
+    <!-- <plugin name="hello_world" filename="gazebo-plugin-libs/libhello-world.so"/> -->
   
     <!-- we need a ground plane to make this work -->
     <model name="ground">
@@ -17,6 +20,7 @@
             <plane normal="0 0 1" size="10 10"/>
           </geometry>
         </visual>
+
         <collision>
           <geometry>
             <plane normal="0 0 1" size="10 10"/>
@@ -24,8 +28,6 @@
         </collision>
       </link> 
     </model>
-
-    <!-- The robot model is spawned by ROS Launch file -->
 
   </world>
 </sdf>

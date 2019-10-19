@@ -1,3 +1,5 @@
+#! /usr/bin/env bash
+#
 # Mobile Robot: Make the Docker Containers
 # Iain Brookshaw
 # Copyright (c), 2019. All Rights Reserved

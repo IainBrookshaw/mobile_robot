@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-    Mobile Robot: Basic URDF and XACRO Definition
+    Mobile Robot: Mobile Robot URDF and XACRO Definition
     Iain Brookshaw
     Copyright (c), 2019. All Rights Reserved
     MIT License
@@ -9,31 +9,35 @@
     see https://github.com/ros/urdf_sim_tutorial/blob/master/urdf/13-diffdrive.urdf.xacro
     for a base example
 -->
-
 <robot name="mobile_robot_basic" xmlns:xacro="http://ros.org/wiki/xacro">
 
     <!--
-        Define some Constants
+        Define Robot Constants
+
+        These are for geometry only. Physics constants for the simulator 
+        are in <name>.gazebo
     -->
 
     <!-- Chassis Constants -->
-    <xacro:property name="chassis_height"        value="0.1"     />
-    <xacro:property name="chassis_center"        value="0 0 0.3" />
-    <xacro:property name="chassis_mass"          value="1.0"     />
+    <xacro:property name="chassis_height"   value="0.05"     />
+    <xacro:property name="chassis_diameter" value="0.2"      />
+    <xacro:property name="chassis_center"   value="0 0 ${chassis_height / 2.0}" />
+    <xacro:property name="chassis_mass"     value="1.0"      />
 
-    <!-- Drive Wheel Constants -->
-    <xacro:property name="wheel_base"            value="0.2"  />
-    <xacro:property name="wheel_diameter"        value="0.07" />
-    <xacro:property name="wheel_thickness"       value="0.01" />
-    <xacro:property name="wheel_mass"            value="0.01" />
+    <!-- Drive Wheels Constants -->
+    <xacro:property name="wheel_base"      value="${chassis_diameter}"/>
+    <xacro:property name="wheel_diameter"  value="0.05"  />
+    <xacro:property name="wheel_thickness" value="0.005" />
+    <xacro:property name="wheel_mass"      value="0.001" />
+    <xacro:property name="wheel_axel_x"    value="0.01" />
 
-    <!-- castor wheel constants -->
-    <xacro:property name="castor_wheel_diameter" value="0.05" />
-    <xacro:property name="castor_wheel_center"   value="-0.1 0 0.025" />
 
-    <!--
-        Define a macro to compute the default inertial value for an object
-    -->
+    <!-- Castor Wheel Constants -->
+    <xacro:property name="castor_wheel_diameter" value="0.03" />
+    <xacro:property name="castor_wheel_center"   value="-${chassis_diameter/2.0} 0 ${castor_wheel_diameter/2.0}" />
+    <xacro:property name="castor_wheel_mass"     value="0.001" />
+
+    <!-- Define a macro to compute the default inertial value for a link -->
     <xacro:macro name="default_inertial" params="mass">
         <inertial>
             <mass value="${mass}" />
@@ -41,19 +45,25 @@
         </inertial>
     </xacro:macro>
 
-    <!--
-        Robot Chassis Link
+    <!-- load the physics constants for the Gazebo Simulator -->
+    <xacro:include filename="$(find mobile_robot_gazebo)/urdf/mobile_robot_basic.gazebo" />
+
+
+    <!-- _______________________________________________________________________________________________________________
+         LINKS & JOINTS             
     -->
+
+    <!-- Robot Chassis Link -->
     <link name="chassis">
         <visual>
             <geometry>
-                <cylinder radius="${wheel_base}" length="${chassis_height}"/>
+                <cylinder radius="${chassis_diameter/2.0}" length="${chassis_height}"/>
                 <origin xyz="${chassis_center}" />
             </geometry>
         </visual>
         <collision>
             <geometry>
-                <cylinder radius="${wheel_base}" length="${chassis_height}"/>
+                <cylinder radius="${chassis_diameter/2.0}" length="${chassis_height}"/>
                 <origin xyz="${chassis_center}" />
             </geometry>
         </collision>
@@ -63,9 +73,7 @@
         <!-- TODO: GAZEBO PLUGIN FOR SENSORS GOES HERE -->
     </link>
 
-    <!--
-        Castor Wheel Link and Joint
-    -->
+    <!-- Castor Wheel Link and Joint -->
     <link name="castor_wheel">
         <visual>
             <origin xyz="${castor_wheel_center}" />
@@ -80,11 +88,14 @@
                 <sphere radius="${castor_wheel_diameter/2.0}" />
             </geometry>
         </collision>
+
+        <xacro:default_inertial mass="${castor_wheel_mass}"/>
+
     </link>
     <joint name="castor_joint" type="fixed">
         <parent link="chassis"      />
         <child  link="castor_wheel" />
-        <origin xyz="0 0 -${castor_wheel_diameter/2.0}" rpy="0 0 0"/>
+        <origin xyz="0 0 -${chassis_height}" rpy="0 0 0"/>
     </joint>
 
 
@@ -113,23 +124,14 @@
     
             <xacro:default_inertial mass="${wheel_mass}"/>
         </link>
+
         <joint name="${prefix}_wheel_joint" type="continuous" >
             <axis xyz="0 1 0" rpy="0 0 0" />
             <parent link="chassis" />
             <child link="${prefix}_wheel"/>
-            <origin xyz="0 ${wheel_base*reflect/2.0} -${wheel_diameter/2+.05}" rpy="0 0 0"/>
+            <origin xyz="${wheel_axel_x} ${0.005*reflect + wheel_base*reflect/2.0} -${wheel_diameter/2.0}" rpy="0 0 0"/>
         </joint>
 
-        <!-- This block provides the simulator (Gazebo) with information on a few additional
-        physical properties. See http://gazebosim.org/tutorials/?tut=ros_urdf for more-->
-        <gazebo reference="${prefix}_wheel">
-            <mu1 value="200.0"/>
-            <mu2 value="100.0"/>
-            <kp value="10000000.0" />
-            <kd value="1.0" />
-        </gazebo>
-
-        <!-- TODO: WHEEL PLUGIN FOR MOTOR GOES HERE -->
     </xacro:macro>
 
     <!--

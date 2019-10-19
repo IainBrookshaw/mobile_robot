@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<!--
+    Mobile Robot: Mobile Robot: Gazebo extensions to URDF definition
+    Iain Brookshaw
+    Copyright (c), 2019. All Rights Reserved
+    MIT License
+
+    This fill is appended to the `mobile_robot_basic.urdf.xacro` file and contains
+    all the extras needed by gazebo, including:
+
+    - link physics constants
+        - friction
+        - spring constants
+
+    - link plugins
+        - sensors
+        - motors
+
+    See:
+        - http://gazebosim.org/tutorials/?tut=ros_urdf
+        - https://github.com/ros-simulation/gazebo_ros_demos/blob/kinetic-devel/rrbot_description/urdf/rrbot.gazebo
+-->
+<robot>
+
+    <!-- _______________________________________________________________________________________________________________
+         LINK and JOINT PHYSICS
+    -->
+
+    <!--
+        Drive Wheel Physics 
+        
+        Define the drive wheel contact friction and spring bounce
+    
+        TODO: The correct spring ('k') constant
+    -->
+    <gazebo reference="left_wheel">
+        <mu1 value="200.0"/>
+        <mu2 value="100.0"/>
+        <kp value="10000000.0" />
+        <kd value="1.0" />
+    </gazebo>
+
+    <gazebo reference="right_wheel">
+        <mu1 value="200.0"/>
+        <mu2 value="100.0"/>
+        <kp value="10000000.0" />
+        <kd value="1.0" />
+    </gazebo>
+
+    <!--
+        Castor Wheel Physics
+
+        The castor wheel should be ~frictionless
+        TODO: The correct spring ('k') constant
+     -->
+    <gazebo reference="castor_wheel">
+        <mu1 value="0.00001"/>
+        <mu2 value="0.00001"/>
+    </gazebo>
+
+    <!-- _______________________________________________________________________________________________________________
+         SENSORS
+    -->
+
+    <!--
+        lidar
+    -->
+    <gazebo reference="chassis">
+    <sensor type="gpu_ray" name="body_lidar">
+
+      <pose>0 0 0 0.1 0 0.1</pose>
+      <visualize>true</visualize>
+      <update_rate>40</update_rate>
+    
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>720</samples>
+            <resolution>0.5</resolution>
+            <min_angle>-1.570796</min_angle>
+            <max_angle>1.570796</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.05</min>
+          <max>10.0</max>
+          <resolution>0.05</resolution>
+        </range>
+        <!-- <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise> -->
+      </ray>
+
+      <plugin name="gazebo_body_lidar_controller" filename="libgazebo_ros_gpu_laser.so">
+        <topicName>/mobile_robot/lidar/scan</topicName>
+        <frameName>chassis</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+
+</robot>
