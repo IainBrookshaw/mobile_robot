@@ -1,4 +1,6 @@
-# Mobile Robot: Run ALL the robot
+#! /usr/bin/env bash
+#
+# Mobile Robot: Run ALL of the robot
 # Iain Brookshaw
 # Copyright (c), 2019. All Rights Reserved
 # MIT License
@@ -6,61 +8,56 @@
 # Running this script will start up both the gazebo simulation and ROS architecture
 # containers 
 #
-# For this script to work, you must run:
-#   - `build-docker-images.bash`
-#   - `build.bash`
+_this_dir="$( cd "$(dirname "$0")" ; pwd -P )"
+pushd `pwd`
+cd $_this_dir
 
-# ----------------------------------------------------------------------------------------------------------------------
-# PATHS
-
-# directories/volume mapping
-gazebo_src_code_dir="`pwd`/gazebo"
-gazebo_volume="/gazebo"
-#
-run_scripts_dir="`pwd`/scripts"
-run_scripts_volume="/scripts"
-#
-ros_src="`pwd`/src"
-ros_volume="/ros"
-
-# container names
-gazebo_img_name="mobile-robot-gazebo:latest"
-gazebo_run_container_name="mobile-robot-run-gazebo"
-
-ros_img_name="mobile-robot-ros:latest"
-ros_run_container_name="mobile-robot-run-ros"
+# load all the constants
+source scripts/mobile-robot.bash
 
 # ----------------------------------------------------------------------------------------------------------------------
 # FUNCTIONS
 
-function quit(){
+function close_containers() {
 
-    echo "run.bash: stopping gazebo container"
-    docker stop $gazebo_run_container_name > /dev/null 2>&1
-    docker rm   $gazebo_run_container_name > /dev/null 2>&1
+    echo -e "\trun.bash: stopping gazebo container"
+    docker stop $gazebo_docker_run_container_name
+    docker rm   $gazebo_docker_run_container_name
 
-    echo "run.bash: stopping ros container"
-    docker stop $ros_run_container_name > /dev/null 2>&1
-    docker rm   $ros_run_container_name > /dev/null 2>&1
-    
-    popd > /dev/null 2>&1
-    exit $1
+    echo -e "\trun.bash: stopping ros container"
+    docker stop $ros_docker_run_container_name
+    docker rm   $ros_docker_run_container_name
+
+    echo -e"\tterminating unused docker networks"
+    yes | docker network prune
 }
 
-function run_gazebo(){
+function run_gazebo() {
 
-    echo "run_gazebo: Standing Up Gazebo Plugins"
-    docker run  \
-        --name $gazebo_run_container_name \
+    echo
+
+    docker run -d \
+        --name $gazebo_docker_run_container_name \
+        --volume $gazebo_src_volume_host_path:$gazebo_src_volume_name \
+        --volume $gazebo_scripts_volume_host_path:$gazebo_scripts_volume_name \
         --env RUN_MODE="run" \
-        --volume $gazebo_src_code_dir:$gazebo_volume \
-        --volume $run_scripts_dir:$run_scripts_volume \
+        --network=$ros_network \
+        --ip $gazebo_container_ip \
         --env="DISPLAY" \
         --env="QT_X11_NO_MITSHM=1" \
         --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-        $gazebo_img_name > /dev/null 2>&1
+        $gazebo_docker_image_name > /dev/null 2>&1
 
-    echo "run_gazebo: Connecting the Gazebo container to the hosts X-Server"
+        # --net $ros_net \
+        # --ip "$ros_network_static_ip".$gazebo_container_octet \
+      
+
+    if [ $? -ne 0 ]; then 
+        echo "ERROR: could not run the gazebo docker image"
+        return 1
+    fi
+
+    echo -e "\trun_gazebo: Connecting the Gazebo container to the hosts X-Server"
     export containerId=$(docker ps -l -q)
     xhost +local:`docker inspect --format='{{ .Config.Hostname }}' $containerId`
     docker start $containerId
@@ -68,27 +65,75 @@ function run_gazebo(){
     return $?
 }
 
-function run_ros(){
-    echo "Running the ROS Architecture"
+function run_ros() {
+    echo -e "\trun_ros: Running the ROS Architecture"
     docker run \
-        --name $ros_run_container_name \ 
-        --volume ../ros_ws \
-        $ros_img_name
-    return 0
+        --name $ros_docker_run_container_name \
+        --volume $ros_scripts_volume_host_path:$ros_scripts_volume_name \
+        --volume $ros_src_volume_host_path:$ros_src_volume_name \
+        --env RUN_MODE="run" \
+        --network $ros_network \
+        --ip $ros_container_ip \
+        $ros_docker_image_name
+    
+    return $?
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
 # MAIN
 
-pushd `pwd`
-cd `dirname "$0"`
 
-echo "run.bash: running gazebo container"
+echo "
+ +--------------------------------------------------------------------------------+
+ | Mobile Robot: Run All                                                          |
+ | Copyright (c) 2019                                                             |
+ |                                                                                |
+ | Running the mobile robot with Gazebo Simulation                                |
+ +--------------------------------------------------------------------------------+
+"
+echo
+echo "GERNERAL:"
+echo -en "creating ros subnet for Docker containers... "
+create_ros_subnet
+if [ $? -ne 0 ]; then
+    echo "could not create ros subnet \"$ros_network\""
+    close_containers 1
+    quit_with_popd 1
+fi
+echo "done"
+
+echo
+echo "GAZEBO:"
+echo -en "starting gazebo container..."
 run_gazebo > /dev/null 2>&1 &
+if [ $? -ne 0 ]; then
+    echo
+    echo "ERROR: could not start gazebo docker container!"
+    close_containers 1 > /dev/null 2>&1
+    quit_with_popd 1
+fi
+echo " done"
 
-echo "run.bash: running ros container"
-run_ros  > /dev/null 2>&1 &
+echo
+echo "ROS:"
+echo -en "starting ros container..."
+run_ros #> /dev/null 2>&1 &
+if [ $? -ne 0 ]; then
+    echo
+    echo "ERROR: could not start ROS docker container!"
+    close_containers 1 > /dev/null 2>&1
+    quit_with_popd 1
+fi
+echo " done"
+echo
 
-read -p "Press enter to stop both containers..."
-echo "Run Finished, closing containers"
-quit 0
+echo "Both ROS and Gazebo containers started and running."
+read -ep "**** Press <enter> to stop both containers: "
+echo "Run Finished, closing both ROS and Gazebo containers..."
+echo
+
+echo
+echo "Closing Gazebo and ROS Docker Containers"
+echo "----------------------------------------------------------------------------------"
+close_containers 0 > /dev/null 2>&1
+quit_with_popd $?

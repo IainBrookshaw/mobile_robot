@@ -14,10 +14,7 @@ RUN apt-get install -y \
     libgazebo9-dev
 
 # define the volumes we will mount from the host system
-VOLUME ["/gazebo", "/scripts"]
-
-# export the plugin libs path (necessary for running simulations, not build)
-RUN export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:/gazebo/gazebo-plugin-libs
+VOLUME ["/ros_ws", "/scripts"]
 
 # run the build scripts
 CMD /scripts/gazebo.bash

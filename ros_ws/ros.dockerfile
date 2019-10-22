@@ -8,14 +8,15 @@
 #
 FROM osrf/ros:melodic-desktop-bionic
 
-# ROS/Gazebo dependencies for simulator communications and other ros-packages
-# RUN apt-get install -y \
-#     ros-melodic-gazebo-ros-pkgs \
-#     ros-melodic-gazebo-ros-control \
-#     ros-melodic-ros-control \
-#     ros-melodic-ros-controllers
+RUN apt-get update
 
-VOLUME [ "/mobile-robot-ros" ]
+# ROS/Gazebo dependencies for simulator communications and other ros-packages
+RUN apt-get install -y \
+    ros-melodic-gazebo-ros-pkgs \
+    ros-melodic-gazebo-ros-control \
+    iputils-ping
+
+VOLUME [ "/ros_ws", "/scripts" ]
 
 # Run the robot
 CMD scripts/ros.bash
