@@ -20,12 +20,12 @@ source scripts/mobile-robot.bash
 function close_containers() {
 
     echo -e "\trun.bash: stopping gazebo container"
-    docker stop $gazebo_docker_run_container_name > /dev/null 2>&1
-    docker rm   $gazebo_docker_run_container_name > /dev/null 2>&1
+    docker stop $gazebo_docker_run_container_name
+    docker rm   $gazebo_docker_run_container_name
 
     echo -e "\trun.bash: stopping ros container"
-    docker stop $ros_docker_run_container_name > /dev/null 2>&1
-    docker rm   $ros_docker_run_container_name > /dev/null 2>&1
+    docker stop $ros_docker_run_container_name
+    docker rm   $ros_docker_run_container_name
 
     echo -e"\tterminating unused docker networks"
     yes | docker network prune
@@ -33,7 +33,9 @@ function close_containers() {
 
 function run_gazebo() {
 
-    docker run -it \
+    echo
+
+    docker run \
         --name $gazebo_docker_run_container_name \
         --volume $gazebo_src_volume_host_path:$gazebo_src_volume_name \
         --volume $gazebo_scripts_volume_host_path:$gazebo_scripts_volume_name \
@@ -41,9 +43,8 @@ function run_gazebo() {
         --env="DISPLAY" \
         --env="QT_X11_NO_MITSHM=1" \
         --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-        $gazebo_docker_image_name /bin/bash
-        
-        # > /dev/null 2>&1
+        $gazebo_docker_image_name > /dev/null 2>&1
+
         # --net $ros_net \
         # --ip "$ros_network_static_ip".10 \
         #
@@ -98,36 +99,35 @@ echo "done"
 echo
 echo "GAZEBO:"
 echo -en "starting gazebo container..."
-run_gazebo # > /dev/null 2>&1 &
-# if [ $? -ne 0 ]; then
-#     echo
-#     echo "ERROR: could not start gazebo docker container!"
-#     close_containers 1
-#     quit_with_popd 1
-# fi
+run_gazebo > /dev/null 2>&1 &
+if [ $? -ne 0 ]; then
+    echo
+    echo "ERROR: could not start gazebo docker container!"
+    close_containers 1 > /dev/null 2>&1
+    quit_with_popd 1
+fi
 echo " done"
 
-# echo
-# echo "ROS:"
-# echo -en "starting ros container..."
-# run_ros  #> /dev/null 2>&1 &
-# if [ $? -ne 0 ]; then
-#     echo
-#     echo "ERROR: could not start ROS docker container!"
-#     close_containers 1
-#     quit_with_popd 1
-# fi
-# echo " done"
-# echo
-
-echo "Both ROS and Gazebo containers started and running."
-read -ep "**** Press <any key> to stop both containers: "
-echo "Run Finished, closing both ROS and Gazebo containers..."
+echo
+echo "ROS:"
+echo -en "starting ros container..."
+run_ros > /dev/null 2>&1 &
+if [ $? -ne 0 ]; then
+    echo
+    echo "ERROR: could not start ROS docker container!"
+    close_containers 1 > /dev/null 2>&1
+    quit_with_popd 1
+fi
+echo " done"
 echo
 
+echo "Both ROS and Gazebo containers started and running."
+read -ep "**** Press <enter> to stop both containers: "
+echo "Run Finished, closing both ROS and Gazebo containers..."
+echo
 
 echo
 echo "Closing Gazebo and ROS Docker Containers"
 echo "----------------------------------------------------------------------------------"
-close_containers 0
+close_containers 0 > /dev/null 2>&1
 quit_with_popd $?
