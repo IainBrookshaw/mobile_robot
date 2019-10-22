@@ -13,9 +13,10 @@ RUN apt-get update
 # ROS/Gazebo dependencies for simulator communications and other ros-packages
 RUN apt-get install -y \
     ros-melodic-gazebo-ros-pkgs \
-    ros-melodic-gazebo-ros-control
+    ros-melodic-gazebo-ros-control \
+    iputils-ping
 
-VOLUME [ "/mobile-robot-ros" ]
+VOLUME [ "/ros_ws", "/scripts" ]
 
 # Run the robot
 CMD scripts/ros.bash

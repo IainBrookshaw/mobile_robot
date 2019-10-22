@@ -12,6 +12,7 @@ _this_dir="$( cd "$(dirname "$0")" ; pwd -P )"
 pushd `pwd`
 cd $_this_dir
 
+# load all the constants
 source scripts/mobile-robot.bash
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -35,19 +36,21 @@ function run_gazebo() {
 
     echo
 
-    docker run \
+    docker run -d \
         --name $gazebo_docker_run_container_name \
         --volume $gazebo_src_volume_host_path:$gazebo_src_volume_name \
         --volume $gazebo_scripts_volume_host_path:$gazebo_scripts_volume_name \
         --env RUN_MODE="run" \
+        --network=$ros_network \
+        --ip $gazebo_container_ip \
         --env="DISPLAY" \
         --env="QT_X11_NO_MITSHM=1" \
         --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
         $gazebo_docker_image_name > /dev/null 2>&1
 
         # --net $ros_net \
-        # --ip "$ros_network_static_ip".10 \
-        #
+        # --ip "$ros_network_static_ip".$gazebo_container_octet \
+      
 
     if [ $? -ne 0 ]; then 
         echo "ERROR: could not run the gazebo docker image"
@@ -65,12 +68,15 @@ function run_gazebo() {
 function run_ros() {
     echo -e "\trun_ros: Running the ROS Architecture"
     docker run \
-        --name $ros_run_container_name \ 
-        --volume ../ros_ws \
-        --net $ros_network \
-        --ip "$ros_network_static_ip".11 \
-        $ros_img_name
-    return 0
+        --name $ros_docker_run_container_name \
+        --volume $ros_scripts_volume_host_path:$ros_scripts_volume_name \
+        --volume $ros_src_volume_host_path:$ros_src_volume_name \
+        --env RUN_MODE="run" \
+        --network $ros_network \
+        --ip $ros_container_ip \
+        $ros_docker_image_name
+    
+    return $?
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -111,7 +117,7 @@ echo " done"
 echo
 echo "ROS:"
 echo -en "starting ros container..."
-run_ros > /dev/null 2>&1 &
+run_ros #> /dev/null 2>&1 &
 if [ $? -ne 0 ]; then
     echo
     echo "ERROR: could not start ROS docker container!"
