@@ -1,0 +1,36 @@
+#
+# Mobile Robot: Mobile Robot: ROS Control Configuration for Gazebo motors
+# Iain Brookshaw
+#
+# Copyright (c), 2019. All Rights Reserved
+# MIT License
+#
+mobile_robot:
+
+  # ----------------------------------------------------------------------------
+  # Publish all joint states
+  #
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    publish_rate: 50  
+
+  # ----------------------------------------------------------------------------
+  # Position Controllers
+  #
+  left_motor_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: left_wheel_joint
+    pid: {
+      p: 100.00,
+      i:   0.01,
+      d:  10.00
+    }
+  
+  right_motor_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: right_wheel_joint
+    pid: {
+      p: 100.00,
+      i:   0.01, 
+      d:  10.00
+    }

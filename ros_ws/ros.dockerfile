@@ -8,12 +8,11 @@
 #
 FROM osrf/ros:melodic-desktop-bionic
 
-RUN apt-get update
-
 # ROS/Gazebo dependencies for simulator communications and other ros-packages
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y \
     ros-melodic-gazebo-ros-pkgs \
     ros-melodic-gazebo-ros-control \
+    ros-melodic-ros-controllers \
     iputils-ping
 
 VOLUME [ "/ros_ws", "/scripts" ]

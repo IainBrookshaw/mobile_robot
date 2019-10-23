@@ -16,12 +16,15 @@
         - sensors
         - motors
 
+    - motor controllers
+
     See:
         - http://gazebosim.org/tutorials/?tut=ros_urdf
         - https://github.com/ros-simulation/gazebo_ros_demos/blob/kinetic-devel/rrbot_description/urdf/rrbot.gazebo
+        - http://gazebosim.org/tutorials?tut=ros_control&cat=connect_ros
 -->
 <robot>
-
+    
     <!-- _______________________________________________________________________________________________________________
          LINK and JOINT PHYSICS
     -->
@@ -66,39 +69,49 @@
         lidar
     -->
     <gazebo reference="chassis">
-    <sensor type="gpu_ray" name="body_lidar">
+      <sensor type="gpu_ray" name="body_lidar">
 
-      <pose>0.05 0 0.03 0 0 0</pose>
-      <visualize>true</visualize>
-      <update_rate>40</update_rate>
-    
-      <ray>
-        <scan>
-          <horizontal>
-            <samples>100</samples>
-            <resolution>0.5</resolution>
-            <min_angle>-1.570796</min_angle>
-            <max_angle>1.570796</max_angle>
-          </horizontal>
-        </scan>
-        <range>
-          <min>0.05</min>
-          <max>2.0</max>
-          <resolution>0.05</resolution>
-        </range>
-        <!-- <noise>
-          <type>gaussian</type>
-          <mean>0.0</mean>
-          <stddev>0.01</stddev>
-        </noise> -->
-      </ray>
+        <pose>0.05 0 0.03 0 0 0</pose>
+        <visualize>true</visualize>
+        <update_rate>40</update_rate>
+      
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>100</samples>
+              <resolution>0.5</resolution>
+              <min_angle>-1.570796</min_angle>
+              <max_angle>1.570796</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.05</min>
+            <max>2.0</max>
+            <resolution>0.05</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.01</stddev>
+          </noise>
+        </ray>
 
-      <plugin name="gazebo_body_lidar_controller" filename="libgazebo_ros_gpu_laser.so">
-        <topicName>/mobile_robot/lidar/scan</topicName>
-        <frameName>chassis</frameName>
+        <plugin name="gazebo_body_lidar_controller" filename="libgazebo_ros_gpu_laser.so">
+          <topicName>/mobile_robot/lidar/scan</topicName>
+          <frameName>chassis</frameName>
+        </plugin>
+      </sensor>
+    </gazebo>
+
+
+    <!-- _______________________________________________________________________________________________________________
+         TRANSMISSION AND CONTROLLERS
+    -->
+    <gazebo>
+      <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+        <robotNamespace>/mobile_robot</robotNamespace>
+        <!-- <robotParam>/mobile_robot</robotParam> -->
       </plugin>
-    </sensor>
-  </gazebo>
-
+    </gazebo>
 
 </robot>

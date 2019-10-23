@@ -10,8 +10,10 @@
 FROM osrf/ros:melodic-desktop-full-bionic
 
 # system packages needed to build against Gazebo
-RUN apt-get install -y \
-    libgazebo9-dev
+RUN apt-get update && apt-get install -y \
+    libgazebo9-dev \
+    ros-melodic-gazebo-ros-control \
+    ros-melodic-ros-controllers
 
 # define the volumes we will mount from the host system
 VOLUME ["/ros_ws", "/scripts"]

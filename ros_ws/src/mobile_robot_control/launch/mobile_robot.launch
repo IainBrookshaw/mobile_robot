@@ -1,0 +1,35 @@
+<!--
+    Mobile Robot: Mobile Robot: Gazebo extensions to URDF definition
+    Iain Brookshaw
+    Copyright (c), 2019. All Rights Reserved
+    MIT License
+-->
+<launch>
+
+    <!-- Load joint controller configurations from YAML file to parameter server -->
+    <rosparam file="$(find mobile_robot_control)/config/mobile_robot_control.yaml" command="load"/>
+
+    <!-- load the motor controllers -->
+    <node
+        name="controller_spawner"
+        pkg="controller_manager"
+        type="spawner" 
+        respawn="false"
+        output="screen"
+        ns="/mobile_robot"
+        args="left_motor_position_controller right_motor_position_controller joint_state_controller"/>
+
+
+    <!-- convert joint states to TF transforms for rviz, etc -->
+    <node name="robot_state_publisher" 
+          pkg="robot_state_publisher"
+          type="robot_state_publisher"
+          respawn="false"
+          output="screen">
+        <remap from="/joint_states" to="/mobile_robot/joint_states" />
+    </node>
+
+    <!-- Drive The Robot -->
+    <node pkg="mobile_robot_control" name="circle_drive" type="circle_drive.py" output="screen"/>
+
+</launch>

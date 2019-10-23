@@ -28,8 +28,9 @@
   </include>
 
   <!-- Convert an xacro and put on parameter server -->
+  <!-- NOTE: if using the ROS controller with gazebo, this must be 'robot_description'! -->
   <param 
-    name    = "mobile_robot_description"
+    name    = "/robot_description"
     command = "$(find xacro)/xacro $(find mobile_robot_gazebo)/urdf/mobile_robot_basic.urdf.xacro" />
 
   <!-- Spawn a robot into Gazebo -->
@@ -39,6 +40,11 @@
     type = "spawn_model"
     respawn = "false"
     output  = "screen"
-    args    = "-unpause -param mobile_robot_description -urdf -model mobile_robot" />
+    args    = "-unpause -param robot_description -urdf -model mobile_robot" />
       
+
+  <!-- Fire up its motor controllers -->
+  <include file="$(find mobile_robot_control)/launch/mobile_robot.launch"/>
+
+
 </launch>
