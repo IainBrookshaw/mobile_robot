@@ -46,11 +46,8 @@ function run_gazebo() {
         --env="DISPLAY" \
         --env="QT_X11_NO_MITSHM=1" \
         --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-        $gazebo_docker_image_name > /dev/null 2>&1
-
-        # --net $ros_net \
-        # --ip "$ros_network_static_ip".$gazebo_container_octet \
-      
+        --runtime=nvidia \
+        $gazebo_docker_image_name
 
     if [ $? -ne 0 ]; then 
         echo "ERROR: could not run the gazebo docker image"
@@ -105,7 +102,7 @@ echo "done"
 echo
 echo "GAZEBO:"
 echo -en "starting gazebo container..."
-run_gazebo > /dev/null 2>&1 &
+run_gazebo #> /dev/null 2>&1 &
 if [ $? -ne 0 ]; then
     echo
     echo "ERROR: could not start gazebo docker container!"
