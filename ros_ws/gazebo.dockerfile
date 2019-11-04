@@ -16,6 +16,12 @@ RUN apt-get install -y \
 # define the volumes we will mount from the host system
 VOLUME ["/ros_ws", "/scripts"]
 
+# nvidia-container-runtime
+ENV NVIDIA_VISIBLE_DEVICES \
+    ${NVIDIA_VISIBLE_DEVICES:-all}
+ENV NVIDIA_DRIVER_CAPABILITIES \
+    ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
+
 # run the build scripts
 CMD /scripts/gazebo.bash
 
