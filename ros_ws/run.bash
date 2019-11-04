@@ -20,15 +20,15 @@ source scripts/mobile-robot.bash
 
 function close_containers() {
 
-    echo -e "\trun.bash: stopping gazebo container"
+    echo -e "$echo_info\t stopping gazebo container"
     docker stop $gazebo_docker_run_container_name
     docker rm   $gazebo_docker_run_container_name
 
-    echo -e "\trun.bash: stopping ros container"
+    echo -e "$echo_info\t stopping ros container"
     docker stop $ros_docker_run_container_name
     docker rm   $ros_docker_run_container_name
 
-    echo -e"\tterminating unused docker networks"
+    echo -e "$echo_info\t terminating unused docker networks"
     yes | docker network prune
 }
 
@@ -50,11 +50,11 @@ function run_gazebo() {
         $gazebo_docker_image_name
 
     if [ $? -ne 0 ]; then 
-        echo "ERROR: could not run the gazebo docker image"
+        echo -e "$echo_error could not run the gazebo docker image"
         return 1
     fi
 
-    echo -e "\trun_gazebo: Connecting the Gazebo container to the hosts X-Server"
+    echo -e "$echo_info\t Connecting the Gazebo container to the hosts X-Server"
     export containerId=$(docker ps -l -q)
     xhost +local:`docker inspect --format='{{ .Config.Hostname }}' $containerId`
     docker start $containerId
@@ -63,7 +63,7 @@ function run_gazebo() {
 }
 
 function run_ros() {
-    echo -e "\trun_ros: Running the ROS Architecture"
+    echo -e "$echo_info\t Running the ROS Architecture"
     docker run \
         --name $ros_docker_run_container_name \
         --volume $ros_scripts_volume_host_path:$ros_scripts_volume_name \
@@ -80,57 +80,60 @@ function run_ros() {
 # MAIN
 
 
-echo "
+echo -e "$B
  +--------------------------------------------------------------------------------+
  | Mobile Robot: Run All                                                          |
  | Copyright (c) 2019                                                             |
  |                                                                                |
  | Running the mobile robot with Gazebo Simulation                                |
- +--------------------------------------------------------------------------------+
+ +--------------------------------------------------------------------------------+ $rs
 "
-echo
-echo "GERNERAL:"
-echo -en "creating ros subnet for Docker containers... "
-create_ros_subnet
+
+echo -e "$echo_info ${B}GERNERAL:$rs"
+echo -e "$echo_info creating ros subnet for Docker containers... "
+create_ros_subnet > /dev/null 2>&1
 if [ $? -ne 0 ]; then
-    echo "could not create ros subnet \"$ros_network\""
+    echo -e "$echo_error could not create ros subnet \"$ros_network\""
     close_containers 1
     quit_with_popd 1
 fi
-echo "done"
+echo -e "$echo_ok ...done"
 
 echo
-echo "GAZEBO:"
-echo -en "starting gazebo container..."
-run_gazebo #> /dev/null 2>&1 &
+echo -e "$echo_info ${B}GAZEBO:$rs"
+echo -e "$echo_info starting gazebo container..."
+run_gazebo > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo
-    echo "ERROR: could not start gazebo docker container!"
+    echo -e "$echo_error could not start gazebo docker container!"
     close_containers 1 > /dev/null 2>&1
     quit_with_popd 1
 fi
-echo " done"
+echo -e "$echo_ok ...done"
 
 echo
-echo "ROS:"
-echo -en "starting ros container..."
-run_ros #> /dev/null 2>&1 &
+echo -e "$echo_info ${B}ROS:$rs"
+echo -e "$echo_info starting ros container..."
+run_ros > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo
-    echo "ERROR: could not start ROS docker container!"
+    echo -e "$echo_error could not start ROS docker container!"
     close_containers 1 > /dev/null 2>&1
     quit_with_popd 1
 fi
-echo " done"
+echo -e "$echo_ok ...done"
 echo
 
-echo "Both ROS and Gazebo containers started and running."
-read -ep "**** Press <enter> to stop both containers: "
-echo "Run Finished, closing both ROS and Gazebo containers..."
-echo
-
-echo
-echo "Closing Gazebo and ROS Docker Containers"
-echo "----------------------------------------------------------------------------------"
+echo -e "$echo_info Both ROS and Gazebo containers started and running."
+echo -e "$echo_info Press ${g}${B}<enter>${rs} to stop both containers: "
+read
+echo -e "$echo_ok Run Finished"
+echo -e "$echo_info Closing Gazebo and ROS Docker Containers..."
 close_containers 0 > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo -e "$echo_error could not close containers cleanly!"
+    quit_with_popd 1
+fi
+echo -e "$echo_ok ...done"
+echo -e "${B}----------------------------------------------------------------------------------${rs}\n"
 quit_with_popd $?
