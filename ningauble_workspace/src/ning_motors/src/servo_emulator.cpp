@@ -49,3 +49,5 @@ ServoMotor::ServoMotor(physics::ModelPtr drive_model) {
     ServoParams params;
     ServoMotor(drive_model, params);
 }
+
+double ServoMotor::_computeNewPose(double new_time, ServoController& pid, ServoParams& params) { double dt = }
