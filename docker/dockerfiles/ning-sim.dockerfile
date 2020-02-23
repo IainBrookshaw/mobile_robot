@@ -1,11 +1,11 @@
-# Mobile Robot: Gazebo Build/Test Docker Image
+# 
+# Ningauble of the Seven Eyes
 # Iain Brookshaw
-# Copyright (c), 2019. All Rights Reserved
+# Copyright (c), 2020, All Rights Reserved
 # MIT License
 #
-# Dockerfile for gazebo half of the project. This dockerfile defines the image 
-# for _both_ building _and_ running the gazebo simulations, depending on the 
-# arguments to the final script.
+# Dockerfile for the gazebo server side, including ROS melodic and all other
+# components needed to stand up the robot simulation server
 #
 FROM osrf/ros:melodic-desktop-full-bionic
 
@@ -13,8 +13,10 @@ FROM osrf/ros:melodic-desktop-full-bionic
 RUN apt-get install -y \
     libgazebo9-dev
 
-# define the volumes we will mount from the host system
-VOLUME ["/ros_ws", "/scripts"]
+# install ROS packages necessary
+RUN apt-get update && apt-get install -y \
+    ros-melodic-octomap \
+    ros-melodic-octomap-server
 
 # nvidia-container-runtime
 ENV NVIDIA_VISIBLE_DEVICES \
