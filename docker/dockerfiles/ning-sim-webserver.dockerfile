@@ -12,11 +12,6 @@ ARG ros_workspace_src="/ningauble_workspace/install"
 ARG ros_workspace_dst="/ning-ros-workspace"
 ENV GAZEBO_MODEL_PATH="${ros_workspace_dst}/share/models"
 
-# install gazebo
-RUN apt-get update && apt-get install -y \
-    gazebo9 \
-    libgazebo9-dev
-
 # Node and others needed to build webserver
 RUN apt-get update && apt-get install -y \
     libjansson-dev \
@@ -42,13 +37,23 @@ RUN apt-get install -y \
     libssl-dev && \
     curl -L https://npmjs.org/install.sh | sh
 
+
+# install gazebo
+RUN apt-get update && apt-get install -y \
+    gazebo9 \
+    libgazebo9-dev
+
+
 RUN mkdir -p ${ros_workspace_dst}
 # COPY ${ros_workspace_src} ${ros_workspace_dst}
 
 # get all GZweb stuff
 RUN hg clone https://bitbucket.org/osrf/gzweb
 WORKDIR gzweb
-RUN hg up master && \
-    npm run deploy
-# RUN ./deploy.sh -m
+RUN . /usr/share/gazebo/setup.sh && \
+    hg up gzweb_1.4.0 && \
+    ./deploy.sh -m local && \
+    npm install
+
+CMD [ "/usr/bin/npm", "start", "--verbose" ]
 

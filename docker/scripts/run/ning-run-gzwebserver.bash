@@ -9,9 +9,16 @@
 
 pushd `pwd` > /dev/null
 cd $( cd $(dirname $0); pwd)
-context="../.."
+name="ning-gzwebserver"
+logdir="/tmp/ning/"
+logfile=${logdir}/"gzwebserver.log"
 
-docker run --rm \
-    --name "ning-gzwebserver" \
+mkdir -p $logdir
+
+docker run \
+    --rm \
+    --name $name \
     --network host \
+    ningauble:gzwebserver  &> $logfile
+
     
