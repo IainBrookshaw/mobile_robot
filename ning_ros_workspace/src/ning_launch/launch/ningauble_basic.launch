@@ -1,0 +1,41 @@
+<launch>
+  <!-- 
+    Ningauble of The Seven Eyes
+    Iain Brookshaw
+    Copyright (c), 2020. All Rights Reserved
+    MIT License
+
+    This launches the stand-alone simulator with the mobile robot model and ROS
+    connections
+
+    To Run:
+      roslaunch ning_launch ningauble_basic.launch
+    
+    Notes:
+      - the world_name is with respect to GAZEBO_RESOURCE_PATH environmental variable
+    -->
+  
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+
+    <arg name="world_name"   value="$(find ning_launch)/worlds/basic_world.world"/> 
+    <arg name="paused"       value="true"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui"          value="true"/>
+    <arg name="recording"    value="false"/>
+    <arg name="debug"        value="false"/>
+  
+  </include>
+
+  <param 
+    name    = "ningauble_description"
+    command = "$(find xacro)/xacro $(find ning_urdf)/urdf/ningauble.xacro" />
+
+  <node 
+    name = "spawn_urdf"
+    pkg  = "gazebo_ros" 
+    type = "spawn_model"
+    respawn = "false"
+    output  = "screen"
+    args    = "-unpause -param ningauble_description -urdf -model ningauble" />
+      
+</launch>

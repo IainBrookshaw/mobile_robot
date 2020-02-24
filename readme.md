@@ -1,26 +1,79 @@
-# Readme: Differential Drive Robot Odometry
+# Ningauble of the Seven Eyes
 
 ## Summary
-    This is a simple example of a Differential Drive Robot odometry. The motion 
-of the differential drive robot is modeled accurately for the ground truth data,
-then modeled with noisy wheel velocity readings to illustrate the real-world
-limitations of this approach.
+Ningauble is a simple mobile robot that demonstrates:
+- Containerized ROS and Gazebo
+- Gazebo web server containerization and OS agnostic support
+- Mobile Robot staples:
+    - odometry
+    - mapping
+    - SLAM
+    - obstacle avoidance
+    - visualization
 
-The simulation is via Python & Matplotlib and allows for user interactions to 
-"drive" the robot around the 2D simulation plane 
+This is an exercise to demonstrate good-practice, neat coding and 
+robot definition
 
-For full mathematical background, see `report`
-    - you will need LaTeX to build this; `pdflatex` or `xelatex` are recommended
+### Scope
 
-# Install
-You will need:
-    - python-3.5 or higher
-    - virtualenv or similar
+The Ningauble robot is a small mobile platform that __will__:
+- use a  differential drive system
+- move autonomously through a static environment
+- avoid static obstacles in that environment
+- maintain a map of the environment
+- be as modular and clean in its architecture as possible
+    - use low-level custom packages for:
+        - servo motor control
+        - path-planning
+        - mapping
+    - this is to demonstrate familiarity with these concepts
+    - the ROS graph should be usable on a real robot, without explicitly drawing on Gazebo sim exploits
 
-```bash
-virtualenv -p python3 /tmp/diff-drive-sim # or whichever path suits :)
-source /tmp/diff-drive-sim/bin/activate
+It __will not__:
+- support manipulators
+- support ackerman steering or skid-steering
+- explicitly recognize dynamic obstacles (reactive avoidance "may" avoid these, but this is not first-class support)
+- detect pitfalls and holes in the flat terrain
+    - terrain is basically a 2-D plane with obstacles
 
-python3 -m pip install diff_sim
-diff_simulation.py # use '--help' for more information
+--------
+## Simulation Container Architecture
+
+The Ningauble robot's containerization follows this overall architecture
+``` 
+                                                                   ||
+                                                                   ||
++----------------------------+                +--------------+     ||
+| Gazebo Server / ROS Master | -------------> | GZWeb Server |  --------> Host: Web Browser
++----------------------------+                +--------------+     ||
+              |                                                    ||
+              |                                                    ||
+              |                                                    ||
++----------------------------+
+|       Ning ROS Graph       |
++----------------------------+                        
 ```
+
+- note that the Gazebo Server container could be swapped out for real hardware interfaces
+- the use of the GZ web server "should" make this platform agnostic (hopefully!)
+
+## Motor Control
+
+## Perception
+
+## Behaviors
+
+## SLAM
+### Odometry
+### Sensor Kalman Filters
+
+## Path Planning
+
+
+
+---------
+### Colophon
+
+"Ningauble of the Seven Eyes" is a sorcerer created by the fantasy author 
+Fritz Leiber in his acclaimed adventures of Fafherd and The Gray Mouser, 
+The City of Lankhmar and the dreaming world of Nehwon.
