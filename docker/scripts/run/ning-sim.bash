@@ -41,6 +41,7 @@ function run_gzweb_server() {
     name=$1
     network=$2
     webserver_log_dir=$3
+    master_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ning-sim)
 
     docker run \
         --rm \
@@ -48,6 +49,7 @@ function run_gzweb_server() {
         -p 8080:8080 \
         --name $name \
         --network $network \
+        --env=GAZEBO_MASTER_IP=$master_ip \
         ningauble:gzwebserver  &> "$webserver_log_dir/gzweb.log"
 }
 

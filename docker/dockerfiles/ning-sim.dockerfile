@@ -25,7 +25,7 @@ ENV NVIDIA_DRIVER_CAPABILITIES \
     ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
 
 RUN mkdir /.gazebo
-VOLUME [/.gazebo ]
+VOLUME "/.gazebo"
 
 # run the build scripts
 CMD ["gzserver", "--verbose"]
