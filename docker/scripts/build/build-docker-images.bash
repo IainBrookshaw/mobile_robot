@@ -9,9 +9,9 @@
 
 pushd `pwd` > /dev/null
 cd $( cd $(dirname $0); pwd)
-context="../.."
 
 source ../common.bash
+context="../.."
 
 function build_sim_server() {
     loginf "building sim-backend docker image..."
@@ -48,6 +48,7 @@ function build_mind() {
 }
 
 # ------------------------------------------------------------------------------
+# Main Program
 
 if ! build_sim_server; then
     exit 1

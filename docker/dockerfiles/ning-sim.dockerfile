@@ -27,6 +27,4 @@ ENV NVIDIA_DRIVER_CAPABILITIES \
 RUN mkdir /.gazebo
 VOLUME "/.gazebo"
 
-# run the build scripts
-CMD ["gzserver", "--verbose"]
-
+CMD [ "/usr/bin/gzerver" ]

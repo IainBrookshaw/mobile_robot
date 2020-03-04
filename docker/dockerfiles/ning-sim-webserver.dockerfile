@@ -49,11 +49,11 @@ RUN mkdir -p ${ros_workspace_dst}
 
 # get all GZweb stuff
 RUN hg clone https://bitbucket.org/osrf/gzweb
-WORKDIR gzweb
+WORKDIR /gzweb
 RUN . /usr/share/gazebo/setup.sh && \
     hg up gzweb_1.4.0 && \
     ./deploy.sh -m local && \
     npm install
 
-CMD [ "/usr/bin/npm", "start", "--verbose" ]
+ENTRYPOINT [ "/usr/bin/npm", "start", "--verbose" ]
 

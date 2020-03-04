@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 #
 # Ningauble of the Seven Eyes
 # Iain Brookshaw
@@ -7,41 +7,21 @@
 #
 pushd `pwd` > /dev/null
 cd $( cd $(dirname $0); pwd)
-
-# ----------------------------------------------------------------------------------------------------------------------
-# Colors & Logging
-
-r="\e[31m"
-g="\e[32m"
-b="\e[34m"
-y="\e[33m"
-rs="\e[0m"
-
-function logerr() {
-    echo -e "${r}[err]:${rs} $1"
-}
-function loginf() {
-    echo -e "${b}[inf]:${rs} $1"
-}
-function logwrn() {
-    echo -e "${y}[wrn]:${rs} $1"
-}
-function logok() {
-    echo -e "${g}[ok]:${rs}  $1"
-}
-
-# ----------------------------------------------------------------------------------------------------------------------
+source ../common.bash
 
 function create_logdir() {
     path=$1
+    loginf "crating logs at path \"$path\""
     mkdir -p $path/gzserver
     mkdir -p $path/gzweb
     mkdir -p $path/ros
     mkdir -p $path/docker
+    logok "done"
 }
 
 function start_network() {
     name=$1
+    loginf "creating network \"$name\""
     docker network create --driver bridge $name
 }
 
@@ -50,6 +30,7 @@ function run_sim_server() {
     network=$2
     server_log_dir=$3
     docker_log_dir=$4
+    loginf "starting simulation backend"
 
     docker run \
         --rm \
@@ -58,7 +39,13 @@ function run_sim_server() {
         --name $name \
         --network $network \
         --volume=$server_log_dir:"/.gazebo" \
-        ningauble:sim-backend &> "$docker_log_dir/gzserver.log"
+        ningauble:sim-backend "--paused" &> "$docker_log_dir/gzserver.log"
+
+    if [ $? -ne 0 ]; then
+        logerr "startup failed"
+        return 1
+    fi
+    return 0
 }
 
 function run_gzweb_server() {
@@ -66,6 +53,7 @@ function run_gzweb_server() {
     network=$2
     webserver_log_dir=$3
     master_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ning-sim)
+    loginf "starting gzweb server, connecting to $master_ip"
 
     docker run \
         --rm \
@@ -75,6 +63,12 @@ function run_gzweb_server() {
         --network $network \
         --env=GAZEBO_MASTER_IP=$master_ip \
         ningauble:gzwebserver  &> "$webserver_log_dir/gzweb.log"
+
+    if [ $? -ne 0 ]; then
+        logerr "startup failed"
+        return 1
+    fi
+    return 0
 }
 
 function close_all() {
@@ -91,13 +85,14 @@ LOGDIR=/tmp/ning
 NETWORK="ning-net"
 WEB_SERVER_NAME="ning-gzweb"
 SIM_SERVER_NAME="ning-sim"
-
+#
 create_logdir $LOGDIR
 start_network $NETWORK
 run_sim_server $SIM_SERVER_NAME $NETWORK $LOGDIR/gzserver $LOGDIR/docker
 run_gzweb_server $WEB_SERVER_NAME $NETWORK $LOGDIR/docker
-
-read -p "press <enter> to quit"
-
+#
+loginf "containers up, press <enter> to quit"
+read -p ""
+#
 close_all $SIM_SERVER_NAME $WEB_SERVER_NAME $NETWORK
 popd
