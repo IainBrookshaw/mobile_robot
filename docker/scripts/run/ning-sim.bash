@@ -8,6 +8,30 @@
 pushd `pwd` > /dev/null
 cd $( cd $(dirname $0); pwd)
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Colors & Logging
+
+r="\e[31m"
+g="\e[32m"
+b="\e[34m"
+y="\e[33m"
+rs="\e[0m"
+
+function logerr() {
+    echo -e "${r}[err]:${rs} $1"
+}
+function loginf() {
+    echo -e "${b}[inf]:${rs} $1"
+}
+function logwrn() {
+    echo -e "${y}[wrn]:${rs} $1"
+}
+function logok() {
+    echo -e "${g}[ok]:${rs}  $1"
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+
 function create_logdir() {
     path=$1
     mkdir -p $path/gzserver
@@ -62,7 +86,7 @@ function close_all() {
     docker network rm $network
 }
 
-# ------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 LOGDIR=/tmp/ning
 NETWORK="ning-net"
 WEB_SERVER_NAME="ning-gzweb"
