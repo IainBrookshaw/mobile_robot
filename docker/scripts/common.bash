@@ -26,3 +26,20 @@ function logwrn() {
 function logok() {
     echo -e "${g}[ok]:${rs}  $1"
 }
+
+function wait_for_container() {
+    name=$1
+    loginf "waiting for \"$name\""
+    while true; do
+        ok=$(docker inspect -f {{.State.Running}} $name)
+        if [ "$ok" == "true" ]; then
+            logok "done, have \"$name\""
+            return 0
+        fi
+        sleep 0.1
+    done;
+}
+
+function get_container_ip() {
+    docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$@"
+}
