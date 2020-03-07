@@ -8,7 +8,8 @@
 # components needed to stand up the robot simulation server
 #
 FROM osrf/ros:melodic-desktop-full-bionic
-# ARG enduser="ningauble"
+ENV ROSPACKAGE "not-a-package"
+ENV LAUNCHFILE "not/a/launchfile"
 
 # system packages needed to build against Gazebo
 RUN apt-get install -y \
@@ -27,7 +28,8 @@ ENV NVIDIA_DRIVER_CAPABILITIES \
     ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
 
 # Gazebo logging
-RUN mkdir /.gazebo
+RUN mkdir /.gazebo && chmod 777 /.gazebo
+RUN mkdir /.ros    && chmod 777 /.ros
 VOLUME "/.gazebo"
 
 # Source Code and end-user
@@ -35,8 +37,6 @@ RUN mkdir /ros_workspace && chmod 777 /ros_workspace
 VOLUME "/ros_workspace"
 VOLUME "/ning-tools"
 
-# RUN adduser --disabled-password --gecos '' ${enduser}
-# USER ${enduser}
 WORKDIR "/ros_workspace"
-
-CMD [ "gzserver", "--verbose" ]
+CMD [ "/bin/bash", "-c", "source /ros_workspace/devel/setup.bash && roslaunch $ROSPACKAGE $LAUNCHFILE" ]
+# CMD [ "sh", "-c", "echo", "package = $ROSPACKAGE launchfile = $LAUNCHFILE" ]

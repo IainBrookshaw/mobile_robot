@@ -38,6 +38,8 @@ function run_sim_server() {
     server_log_dir=$3
     docker_log_dir=$4
     gazebo_port=$5
+    rospackage="ning_launch"
+    roslaunchfile="ningauble_basic.launch"
     #
     user=$(id -u)
     group=$(id -g)
@@ -48,12 +50,18 @@ function run_sim_server() {
     loginf "         using port:    \"$gazebo_port\""
     loginf "         using docker log dir: \"$docker_log_dir\""
     loginf "         using gazebo log dir: \"$server_log_dir\""
+    loginf "         using rospackage: \"$rospackage\""
+    loginf "         using launchfile: \"$roslaunchfile\""
 
     docker run \
         --rm \
         -p $gazebo_port:$gazebo_port \
         --user $user:$group \
         --name $name \
+        \
+        --env ROSPACKAGE=$rospackage \
+        --env LAUNCHFILE=$roslaunchfile \
+        \
         --network $network \
         --volume=$server_log_dir:"/.gazebo" \
         --volume=${ros_workspace_path}:"/ros_workspace" \

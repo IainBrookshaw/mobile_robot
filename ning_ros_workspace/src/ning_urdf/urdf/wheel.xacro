@@ -20,17 +20,17 @@
         These are defined as an XACRO macro to make them duplicates
         mirror using the 'reflect' param: 1 is one side -1 the other
     -->
-    <xacro:macro name="wheel" params="prefix reflect">
+    <xacro:macro name="wheel" params="prefix reflect_x reflect_y">
 
         <link name="${prefix}_wheel">
-            <visual>
+            <visual name="${prefix}_wheel_visual">
                 <origin xyz="0 0 0" rpy="${pi/2} 0 0" />
                 <geometry>
                     <cylinder radius="${wheel_diameter/2.0}" length="${wheel_thickness}"/>
                 </geometry>
             </visual>
 
-            <collision>
+            <collision name="${prefix}_wheel_collision">
                 <origin xyz="0 0 0" rpy="${pi/2} 0 0" />
                 <geometry>
                     <cylinder radius="${wheel_diameter/2}" length="${wheel_thickness}"/>
@@ -44,7 +44,7 @@
             <axis xyz="0 1 0" rpy="0 0 0" />
             <parent link="chassis" />
             <child link="${prefix}_wheel"/>
-            <origin xyz="${wheel_axel_x} ${0.005*reflect + wheel_base*reflect/2.0} -${wheel_diameter/2.0}" rpy="0 0 0"/>
+            <origin xyz="${reflect_x*wheel_base/2.0} ${reflect_y*wheel_base/2.0} ${wheel_diameter/2.0}" rpy="0 0 0"/>
         </joint>
 
     </xacro:macro>

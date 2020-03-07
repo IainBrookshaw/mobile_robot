@@ -4,8 +4,6 @@
     Iain Brookshaw
     Copyright (c), 2019. All Rights Reserved
     MIT License
-
-    Note: The robot model is spawned by ROS Launch file
 -->
 
 <sdf version="1.4">

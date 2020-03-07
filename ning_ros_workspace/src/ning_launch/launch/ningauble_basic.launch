@@ -22,14 +22,15 @@
     <arg name="use_sim_time" value="true"/>
     <arg name="gui"          value="true"/>
     <arg name="recording"    value="false"/>
-    <arg name="debug"        value="false"/>
-  
+    <arg name="debug"        value="false"/>  
   </include>
 
+  <!-- convert from XACRO to URDF -->
   <param 
     name    = "ningauble_description"
     command = "$(find xacro)/xacro $(find ning_urdf)/urdf/ningauble.xacro" />
 
+  <!-- spawn the robot -->
   <node 
     name = "spawn_urdf"
     pkg  = "gazebo_ros" 
