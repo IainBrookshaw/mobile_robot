@@ -13,20 +13,20 @@
 #
 pushd `pwd` > /dev/null
 cd $( cd $(dirname $0); pwd)
-source ../common.bash
+source common.bash
 
 function source_all() {
     declare -a sources
     sources[0]="/opt/ros/melodic/setup.bash"
     sources[1]="/ros_workspace/devel/setup.bash"
 
-    for f in "${sources[*]}"; do
-        if [ ! -f $f ]; then
+    for f in "${sources[@]}"; do
+        if [[ ! -f $f ]]; then
             logerr "Cannot source ROS setup.bash at \"$f\""
             return 1
         fi
         source $f
-    fi
+    done
     return 0
 }
 
@@ -40,6 +40,10 @@ function validate_xacro_file() {
     fi
     tmp_urdf=/tmp/tmp.urdf
     xacro $filepath > /tmp/tmp.urdf && check_urdf /tmp/tmp.urdf
+    if [ $? -ne 0 ]; then
+        logerr "xacro validation failed"
+        return 1
+    fi
 }
 
 
@@ -48,6 +52,6 @@ function validate_xacro_file() {
 
 loginf "about to validate XACRO files prior to Gazebo load"
 if ! source_all; then exit 1; fi
-if ! validate_xacro_file "/ros_workspace/src/ning_urdf/urdf/chassis.xacro"; then exit 1; fi
+if ! validate_xacro_file "/ros_workspace/src/ning_urdf/urdf/ningauble.xacro"; then exit 1; fi
 logok "done, all xacro's pass validation"
 exit 0

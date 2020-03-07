@@ -8,7 +8,7 @@
 # components needed to stand up the robot simulation server
 #
 FROM osrf/ros:melodic-desktop-full-bionic
-ARG enduser="ningauble"
+# ARG enduser="ningauble"
 
 # system packages needed to build against Gazebo
 RUN apt-get install -y \
@@ -35,8 +35,8 @@ RUN mkdir /ros_workspace && chmod 777 /ros_workspace
 VOLUME "/ros_workspace"
 VOLUME "/ning-tools"
 
-RUN adduser --disabled-password --gecos '' ${enduser}
-USER ${enduser}
+# RUN adduser --disabled-password --gecos '' ${enduser}
+# USER ${enduser}
 WORKDIR "/ros_workspace"
 
 CMD [ "gzserver", "--verbose" ]

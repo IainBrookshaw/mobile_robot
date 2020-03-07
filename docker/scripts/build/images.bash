@@ -10,7 +10,7 @@
 pushd `pwd` > /dev/null
 cd $( cd $(dirname $0); pwd)
 
-source ../common.bash
+source ../tools/common.bash
 context="../.."
 
 function build_sim_server() {

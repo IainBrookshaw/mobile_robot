@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+    Ningauble of The Seven Eyes
+    Iain Brookshaw
+    Copyright (c), 2020. All Rights Reserved
+    MIT License
+
+    'X' style drive base for the Ningauble Robot
+    Wheels are imported using standard xacro macro formats
+-->
+<robot name="ningauble" xmlns:xacro="http://ros.org/wiki/xacro">
+  
+    <xacro:include filename="$(find ning_urdf)/urdf/wheel.xacro" />
+
+    <xacro:wheel prefix="forward_left"  reflect="-1" />
+    <xacro:wheel prefix="forward_right" reflect="1"  />
+
+    <xacro:wheel prefix="back_left"  reflect="-1" />
+    <xacro:wheel prefix="back_right" reflect="1"  />
+
+</robot>

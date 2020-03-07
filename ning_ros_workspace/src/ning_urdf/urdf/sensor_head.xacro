@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!--
+    Ningauble of The Seven Eyes
+    Iain Brookshaw
+    Copyright (c), 2020. All Rights Reserved
+    MIT License
+-->
+<robot name="ningauble" xmlns:xacro="http://ros.org/wiki/xacro">
+  
+  
+    <link name="sensor_head">
+        <!-- TODO: Implement -->
+    </link>
+</robot>

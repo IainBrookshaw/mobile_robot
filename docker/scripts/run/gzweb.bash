@@ -9,7 +9,7 @@
 #
 pushd `pwd` > /dev/null
 cd $( cd $(dirname $0); pwd)
-source ../common.bash
+source ../tools/common.bash
 
 ros_workspace_path=$(cd "../../../ning_ros_workspace" && pwd)
 ning_tools=$(cd "../../scripts/tools" && pwd)
@@ -38,7 +38,12 @@ function run_sim_server() {
     server_log_dir=$3
     docker_log_dir=$4
     gazebo_port=$5
+    #
+    user=$(id -u)
+    group=$(id -g)
+    #
     loginf "starting simulation backend container as \"$name\""
+    loginf "         running as:    \"$user:$group\""
     loginf "         using network: \"$network\""
     loginf "         using port:    \"$gazebo_port\""
     loginf "         using docker log dir: \"$docker_log_dir\""
@@ -47,11 +52,17 @@ function run_sim_server() {
     docker run \
         --rm \
         -p $gazebo_port:$gazebo_port \
+        --user $user:$group \
         --name $name \
         --network $network \
         --volume=$server_log_dir:"/.gazebo" \
         --volume=${ros_workspace_path}:"/ros_workspace" \
         --volume=${ning_tools}:"/ning-tools" \
+        \
+        --volume="/etc/group:/etc/group:ro" \
+        --volume="/etc/passwd:/etc/passwd:ro" \
+        --volume="/etc/shadow:/etc/shadow:ro" \
+        \
         ningauble:gazebo &> "$docker_log_dir/gzserver.log" &
 
     if [ $? -ne 0 ]; then
@@ -67,11 +78,12 @@ function run_gzweb_server() {
     webserver_log_dir=$3
     gazebo_master_ip=$4
     gazebo_master_port=$5
+    #
+    
+
     loginf "starting gzweb server:"
     loginf "\tbackend container as: \"$name\""
     loginf "         logging to:    \"$webserver_log_dir\""
-    loginf "         using network: \"$network\""
-    loginf "         using network: \"$network\""
     loginf "         using network: \"$network\""
     loginf "         connecting to: \"$gazebo_master_ip:$gazebo_master_port\""
 
