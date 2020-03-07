@@ -16,6 +16,7 @@ RUN apt-get install -y \
 
 # install ROS packages necessary
 RUN apt-get update && apt-get install -y \
+    liburdfdom-tools \
     ros-melodic-octomap \
     ros-melodic-octomap-server
 
