@@ -10,6 +10,7 @@
 FROM osrf/ros:melodic-desktop-full-bionic
 ENV ROSPACKAGE "not-a-package"
 ENV LAUNCHFILE "not/a/launchfile"
+ENV LIBGL_ALWAYS_INDIRECT "1"
 
 # system packages needed to build against Gazebo
 RUN apt-get install -y \
@@ -28,9 +29,10 @@ ENV NVIDIA_DRIVER_CAPABILITIES \
     ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
 
 # Gazebo logging
-RUN mkdir /.gazebo && chmod 777 /.gazebo
-RUN mkdir /.ros    && chmod 777 /.ros
+RUN mkdir /.gazebo && chmod -R 777 /.gazebo
+RUN mkdir /.ros    && chmod -R 777 /.ros
 VOLUME "/.gazebo"
+VOLUME "/.ros"
 
 # Source Code and end-user
 RUN mkdir /ros_workspace && chmod 777 /ros_workspace

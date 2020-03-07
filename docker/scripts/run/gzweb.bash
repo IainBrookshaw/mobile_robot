@@ -22,7 +22,11 @@ function create_logdir() {
     mkdir -p $path/gzserver
     mkdir -p $path/gzweb
     mkdir -p $path/ros
+    mkdir -p $path/gazebo
     mkdir -p $path/docker
+
+    chmod -R 777 $path/ros
+    chmod -R 777 $path/gazebo
     logok "done"
 }
 
@@ -63,7 +67,9 @@ function run_sim_server() {
         --env LAUNCHFILE=$roslaunchfile \
         \
         --network $network \
-        --volume=$server_log_dir:"/.gazebo" \
+        --volume=$server_log_dir/gazebo:"/.gazebo" \
+        --volume=$server_log_dir/ros:"/.ros" \
+        \
         --volume=${ros_workspace_path}:"/ros_workspace" \
         --volume=${ning_tools}:"/ning-tools" \
         \

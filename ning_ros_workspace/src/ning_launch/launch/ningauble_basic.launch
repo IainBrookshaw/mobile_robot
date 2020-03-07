@@ -21,7 +21,7 @@
     <arg name="paused"       value="true"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui"          value="true"/>
-    <arg name="recording"    value="false"/>
+    <arg name="recording"    value="true"/>
     <arg name="debug"        value="false"/>  
   </include>
 
@@ -37,6 +37,6 @@
     type = "spawn_model"
     respawn = "false"
     output  = "screen"
-    args    = "-unpause -param ningauble_description -urdf -model ningauble" />
+    args    = "-param ningauble_description -urdf -model ningauble" />
       
 </launch>
