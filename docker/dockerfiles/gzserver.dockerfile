@@ -33,6 +33,7 @@ VOLUME "/.gazebo"
 # Source Code and end-user
 RUN mkdir /ros_workspace && chmod 777 /ros_workspace
 VOLUME "/ros_workspace"
+VOLUME "/ning-tools"
 
 RUN adduser --disabled-password --gecos '' ${enduser}
 USER ${enduser}
