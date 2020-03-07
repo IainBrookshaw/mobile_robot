@@ -11,6 +11,9 @@ pushd `pwd` > /dev/null
 cd $( cd $(dirname $0); pwd)
 source ../common.bash
 
+ros_workspace_path=$(cd "../../../ning_ros_workspace" && pwd)
+loginf "using the directory $ros_workspace_path as source"
+
 function create_logdir() {
     path=$1
     loginf "creating logs at path \"$path\""
@@ -45,6 +48,7 @@ function run_sim_server() {
         --name $name \
         --network $network \
         --volume=$server_log_dir:"/.gazebo" \
+        --volume=${ros_workspace_path}:"/ros_workspace" \
         ningauble:gazebo &> "$docker_log_dir/gzserver.log" &
 
     if [ $? -ne 0 ]; then

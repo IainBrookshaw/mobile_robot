@@ -8,6 +8,7 @@
 # components needed to stand up the robot simulation server
 #
 FROM osrf/ros:melodic-desktop-full-bionic
+ARG enduser="ningauble"
 
 # system packages needed to build against Gazebo
 RUN apt-get install -y \
@@ -24,7 +25,16 @@ ENV NVIDIA_VISIBLE_DEVICES \
 ENV NVIDIA_DRIVER_CAPABILITIES \
     ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
 
+# Gazebo logging
 RUN mkdir /.gazebo
 VOLUME "/.gazebo"
+
+# Source Code and end-user
+RUN mkdir /ros_workspace && chmod 777 /ros_workspace
+VOLUME "/ros_workspace"
+
+RUN adduser --disabled-password --gecos '' ${enduser}
+USER ${enduser}
+WORKDIR "/ros_workspace"
 
 CMD [ "gzserver", "--verbose" ]
