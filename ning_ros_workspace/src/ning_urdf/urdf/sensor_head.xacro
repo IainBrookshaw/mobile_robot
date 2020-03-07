@@ -7,8 +7,14 @@
 -->
 <robot name="ningauble" xmlns:xacro="http://ros.org/wiki/xacro">
   
-  
     <link name="sensor_head">
         <!-- TODO: Implement -->
     </link>
+
+    <joint name="neck_joint" type="continuous" >
+        <axis xyz="0 0 1" rpy="0 0 0"/>
+        <parent link="chassis" />
+        <child link="sensor_head" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
+    </joint>
 </robot>

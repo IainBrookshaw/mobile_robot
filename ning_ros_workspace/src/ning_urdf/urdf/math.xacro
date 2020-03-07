@@ -7,11 +7,14 @@
 
     Useful math utils for all geometries
 -->
+<robot name="ningauble" xmlns:xacro="http://ros.org/wiki/xacro">
 
- <!-- Define a macro to compute the default inertial value for a link -->
-<xacro:macro name="default_inertial" params="mass">
-    <inertial>
-        <mass value="${mass}" />
-        <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
-    </inertial>
-</xacro:macro>
+    <!-- Define a macro to compute the default inertial value for a link -->
+    <xacro:macro name="default_inertial" params="mass">
+        <inertial>
+            <mass value="${mass}" />
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+        </inertial>
+    </xacro:macro>
+
+</robot>
