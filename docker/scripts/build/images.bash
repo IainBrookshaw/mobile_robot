@@ -43,7 +43,18 @@ function build_gzwebserver() {
     return 0
 }
 
-function build_mind() {
+function build_ros_runner() {
+    loginf "building ros-runner docker image..."
+
+    docker build \
+        --file ${context}/dockerfiles/ros_runner.dockerfile \
+        --tag "ningauble:ros_runner" \
+        $context
+    if [ $? -ne 0 ]; then
+        logerr "unable to build ros_runner"
+        return 1
+    fi
+    logok "done"
     return 0
 }
 
@@ -56,6 +67,6 @@ fi
 if ! build_gzwebserver; then
     exit 1
 fi
-if ! build_mind; then
+if ! build_ros_runner; then
     exit 1
 fi

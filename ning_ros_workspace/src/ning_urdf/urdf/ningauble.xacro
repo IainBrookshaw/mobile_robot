@@ -31,10 +31,8 @@
     <xacro:property name="wheel_mass"      value="0.001" />
     <xacro:property name="wheel_axel_x"    value="0.01" />
 
-    <!-- Castor Wheel Constants -->
-    <xacro:property name="castor_wheel_diameter" value="0.03" />
-    <xacro:property name="castor_wheel_center"   value="-${chassis_diameter/2.0} 0 ${castor_wheel_diameter/2.0}" />
-    <xacro:property name="castor_wheel_mass"     value="0.001" />
+    <!-- Head Constants -->
+    <xacro:property name="head_center" value="0 0 ${chassis_height / 2.0 + 1}" />
 
     <!-- Define a macro to compute the default inertial value for a link -->
     <xacro:macro name="default_inertial" params="mass">
@@ -55,7 +53,7 @@
     <link name="chassis">
         <visual>
             <geometry>
-                <cylinder radius="${chassis_diameter/2.0}" length="${chassis_height}"/>
+                <mesh filename="package://ning_urdf/urdf/meshes/dae/ningauble_torso.dae"/>
                 <origin xyz="${chassis_center}" />
             </geometry>
         </visual>
@@ -71,30 +69,14 @@
         <!-- TODO: GAZEBO PLUGIN FOR SENSORS GOES HERE -->
     </link>
 
-    <link name="castor_wheel">
+    <link name="head">
         <visual>
-            <origin xyz="${castor_wheel_center}" />
             <geometry>
-                <sphere radius="${castor_wheel_diameter/2.0}" />
+                <mesh filename="package://ning_urdf/urdf/meshes/dae/ningauble_head.dae"/>
+                <origin xyz="${head_center}" />
             </geometry>
-        </visual>
-
-        <collision>
-            <origin xyz="${castor_wheel_center}" />
-            <geometry>
-                <sphere radius="${castor_wheel_diameter/2.0}" />
-            </geometry>
-        </collision>
-
-        <xacro:default_inertial mass="${castor_wheel_mass}"/>
-
+        <visual>
     </link>
-    <joint name="castor_joint" type="fixed">
-        <parent link="chassis"      />
-        <child  link="castor_wheel" />
-        <origin xyz="0 0 -${chassis_height}" rpy="0 0 0"/>
-    </joint>
-
 
     <!--
         Drive Wheel Links and Joints
@@ -108,7 +90,7 @@
             <visual>
                 <origin xyz="0 0 0" rpy="${pi/2} 0 0" />
                 <geometry>
-                    <cylinder radius="${wheel_diameter/2.0}" length="${wheel_thickness}"/>
+                    <mesh filename="package://ning_urdf/urdf/meshes/dae/ningauble_wheel.dae"/>
                 </geometry>
             </visual>
 
@@ -134,7 +116,10 @@
     <!--
         Run the wheel macros to create the left and right wheels
     -->
-    <xacro:wheel prefix="left"  reflect="-1" />
+    <xacro:wheel prefix="front_left"  reflect_x="-1"  reflect_y="1" />
+    <xacro:wheel prefix="front_right" reflect_x="1"   reflect_y="1" />
+    <xacro:wheel prefix="back_left"   reflect_x="-1"  reflect_y="-1" />
+    <xacro:wheel prefix="front_right" reflect_x="1"   reflect_y="-1" />
     <xacro:wheel prefix="right" reflect="1"  />
 
 </robot>

@@ -25,6 +25,8 @@ ENV NVIDIA_DRIVER_CAPABILITIES \
     ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
 
 RUN mkdir /.gazebo
+RUN mkdir /ning_ros_workspace
 VOLUME "/.gazebo"
+VOLUME "/ning_ros_workspace"
 
 CMD [ "gzserver", "--verbose" ]
