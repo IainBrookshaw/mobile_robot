@@ -13,21 +13,14 @@ else
     logwrn "unable to find ning_ros_workspace/devel/setup.bash!"
 fi
 
-if [[ -z "${ROS_PACKAGE}" ]]; then
-    logerr "Please define the required ROS package"
+if [[ -z "${ROS_COMMAND}" ]]; then
+    logerr "Please define the required ROS_COMMAND env var"
     exit 1
 fi
-if [[ -z "${ROS_EXECUTABLE}" ]]; then
-    logerr "Please define the required ROS executable"
-    exit 1
-fi
-rospack find $ROS_PACKAGE 
+
+${ROS_COMMAND}
 if [ $? -ne 0 ]; then
-    logerr "the package \"$ROS_PACKAGE\" is not a valid ROS package"
-    exit 1
-fi
-if ! rosrun $ROS_PACKAGE $ROS_EXECUTABLE $ROS_RUN_ARGS; then
-    logerr "unable to 'rosrun $ROS_PACKAGE $ROS_EXECUTABLE"
+    logerr "Command Failed"
     exit 1
 fi
 exit 0
