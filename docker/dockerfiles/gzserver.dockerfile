@@ -29,4 +29,11 @@ RUN mkdir /ning_ros_workspace
 VOLUME "/.gazebo"
 VOLUME "/ning_ros_workspace"
 
-CMD [ "gzserver", "--verbose" ]
+COPY scripts/common.bash /
+COPY scripts/container/simulation.bash /
+RUN chmod 777 /common.bash
+RUN chmod 777 /simulation.bash
+
+ENV ROS_PACKAGE "unknown-ros-package"
+ENV ROS_LAUNCH_FILE "unknown-ros-launchfile"
+ENTRYPOINT [ "/bin/bash", "-c", "/simulation.bash" ]
