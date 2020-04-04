@@ -39,11 +39,15 @@ function run_sim_server() {
     loginf "         using docker log dir: \"$docker_log_dir\""
     loginf "         using gazebo log dir: \"$server_log_dir\""
 
+    ning_ros_ws="$(cd ../../../ning_ros_workspace && pwd)"
+    loginf " using ning-ros-workspace: \"$ning_ros_ws\""
+
     docker run \
         --rm \
         -p $gazebo_port:$gazebo_port \
         --name $name \
         --network $network \
+        --volume=/ning_ros_workspace:$ning_ros_ws \
         --volume=$server_log_dir:"/.gazebo" \
         ningauble:gazebo &> "$docker_log_dir/gzserver.log" &
 

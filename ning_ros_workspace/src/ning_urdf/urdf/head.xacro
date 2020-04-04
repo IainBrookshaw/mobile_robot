@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!--
+    Ningauble of The Seven Eyes
+    Iain Brookshaw
+    Copyright (c), 2020. All Rights Reserved
+    MIT License
+-->
+
+<robot name="ningauble" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:macro name="head_macro" params="origin" "mass">
+        <link name="head_link">
+            <xacro:default_link_inertial mass="${mass}"/>
+            <visual>
+                <geometry>
+                    <mesh filename="package://ning_urdf/urdf/meshes/dae/ningauble_head.dae"/>
+                    <origin xyz="${origin}"/>
+                </geometry>
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder radius="0.2" length="0.2"/>
+                    <origin xyz="${origin}"/>
+                </geometry>
+            </collision>
+        </link>
+    </xacro:macro>
+</robot>

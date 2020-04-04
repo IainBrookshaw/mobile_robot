@@ -23,16 +23,17 @@ for arg in "${ros_args[@]}"; do
 done
 loginf "have command: $ros_command"
 
-docker run \
-    --rm \
-    -u $(id -u ${USER}):$(id -g ${USER}) \
-    --name="ning_ros_runner" \
-    \
-    -e ROS_COMMAND="${ros_command}" \
-    \
-    --env=ROSCONSOLE_STDOUT_LINE_BUFFERED="1" \
-    --volume $ros_workspace:"/ning_ros_workspace" \
-    --volume $ros_log_path:"/.ros" \
-    \
-    ningauble:ros_runner 
+# docker run \
+#     --rm \
+#     -u $(id -u ${USER}):$(id -g ${USER}) \
+#     --name="ning_ros_runner" \
+#     \
+#     -e ROS_COMMAND="${ros_command}" \
+#     \
+#     --env=ROSCONSOLE_STDOUT_LINE_BUFFERED="1" \
+#     --volume $ros_workspace:"/ning_ros_workspace" \
+#     --volume $ros_log_path:"/.ros" \
+#     \
+#     ningauble:ros_runner 
     
+docker exec ning-gazebo "source /opt/ros/melodic/setup.bash && $ros_command"

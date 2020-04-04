@@ -1,0 +1,24 @@
+
+
+
+    <!-- _______________________________________________________________________________________________________________
+         LINKS & JOINTS             
+    -->
+
+    <link name="chassis">
+        <visual>
+            <geometry>
+                <mesh filename="package://ning_urdf/urdf/meshes/dae/ningauble_torso.dae"/>
+                <origin xyz="${chassis_center}" />
+            </geometry>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="${chassis_diameter/2.0}" length="${chassis_height}"/>
+                <origin xyz="${chassis_center}" />
+            </geometry>
+        </collision>
+
+        <xacro:default_inertial mass="${chassis_mass}"/>
+
+    </link>

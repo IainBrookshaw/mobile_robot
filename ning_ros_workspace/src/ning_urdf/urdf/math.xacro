@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+    Ningauble of The Seven Eyes
+    Iain Brookshaw
+    Copyright (c), 2020. All Rights Reserved
+    MIT License
+
+    This should work with both Gazebo and RViz
+    see https://github.com/ros/urdf_sim_tutorial/blob/master/urdf/13-diffdrive.urdf.xacro
+    for a base example
+-->
+<robot name="ningauble" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <!-- Define a macro to compute the default inertial value for a link -->
+    <xacro:macro name="default_link_inertial" params="mass">
+        <inertial>
+            <mass value="${mass}" />
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+        </inertial>
+    </xacro:macro>
+</robot>

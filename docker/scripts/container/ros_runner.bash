@@ -8,6 +8,7 @@
 source /common.bash
 source /opt/ros/melodic/setup.bash
 if [ -f /ning_ros_workspace/devel/setup.bash ]; then
+    cd /ning_ros_workspace
     source /ning_ros_workspace/devel/setup.bash
 else
     logwrn "unable to find ning_ros_workspace/devel/setup.bash!"
@@ -18,9 +19,9 @@ if [[ -z "${ROS_COMMAND}" ]]; then
     exit 1
 fi
 
-${ROS_COMMAND}
+eval ${ROS_COMMAND}
 if [ $? -ne 0 ]; then
-    logerr "Command Failed"
+    logerr "Command \"$ROS_COMMAND\" Failed: $?"
     exit 1
 fi
 exit 0
